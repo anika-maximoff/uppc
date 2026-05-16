@@ -1007,7 +1007,7 @@ function MonthlyReports() {
 }
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
-export default function ShoppingModule() {
+export default function ShoppingModule({ setPage: goHome }) {
   const [page, setPage] = useState("catalog");
   const [t0, t1] = PAGE_TITLES[page];
   const today = new Date().toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" });
@@ -1044,7 +1044,8 @@ export default function ShoppingModule() {
             <div style={{ fontSize:10, color:"var(--text3)", marginTop:2 }}>May 2025 (partial)</div>
           </div>
           <div className="sb-status"><div className="online-dot" /><span>Sales Module · Live</span></div>
-          <button className="logout">⇤ Back to Portal</button>
+          {/* <button className="logout">⇤ Back to Portal</button> */}
+          <button className="logout" onClick={() => goHome("home")}>⇤ Back to Home</button>
         </div>
       </aside>
 

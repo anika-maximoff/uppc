@@ -927,7 +927,7 @@ function UtilizationReports() {
 }
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
-export default function DonationModule() {
+export default function DonationModule({ setPage: goHome }) {
   const [page, setPage] = useState("portal");
   const [t0, t1] = PAGE_TITLES[page];
   const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -960,7 +960,8 @@ export default function DonationModule() {
             <div style={{ fontSize: 10, color: "var(--text3)", marginTop: 2 }}>Available to disburse</div>
           </div>
           <div className="sb-status"><div className="online-dot" /><span>Donation Module · Live</span></div>
-          <button className="logout">⇤ Back to Portal</button>
+          {/* <button className="logout">⇤ Back to Portal</button> */}
+          <button className="logout" onClick={() => goHome("home")}>⇤ Back to Home</button>
         </div>
       </aside>
 

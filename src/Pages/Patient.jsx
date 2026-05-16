@@ -857,7 +857,7 @@ const PAGE_TITLES = {
 };
 
 // ─── Root component ─────────────────────────────────────────────────────────
-export default function PatientPortal() {
+export default function PatientPortal({ onLogout }) {
   const [page, setPage] = useState("dashboard");
   const [title0, title1] = PAGE_TITLES[page];
 
@@ -891,9 +891,7 @@ export default function PatientPortal() {
           ))}
         </nav>
         <div className="sidebar-footer">
-          <button className="logout-btn sans">
-            <span>⇤</span> Sign Out
-          </button>
+          <button className="logout-btn sans" onClick={onLogout}>Sign Out</button>
         </div>
       </aside>
 
