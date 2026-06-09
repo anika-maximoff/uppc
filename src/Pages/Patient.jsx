@@ -1,26 +1,11 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
-const PATIENT = {
-  name: "Karim Uddin",
-  id: "UPPC-2024-0481",
-  phone: "+880 1711-234567",
-  email: "karim.uddin@email.com",
-  dob: "12 March 1978",
-  address: "House 14, Road 5, Dhanmondi, Dhaka",
-  bloodGroup: "B+",
-  condition: "Post-stroke Hemiplegia",
-  since: "January 2024",
-  avatar: "KU",
+const PATIENT = JSON.parse(localStorage.getItem("user")) || {
+  name: "Guest", id: "N/A", phone: "", email: "",
+  dob: "", address: "", bloodGroup: "", condition: "", since: "", avatar: "GU"
 };
 
-const APPOINTMENTS = [
-  { id: "APT-001", doctor: "Dr. Amina Khanam", spec: "Neurologist", date: "15 May 2025", time: "10:00 AM", status: "upcoming", type: "Follow-up" },
-  { id: "APT-002", doctor: "Dr. Rafiq Hossain", spec: "Physiotherapist", date: "18 May 2025", time: "2:30 PM", status: "upcoming", type: "Therapy Session" },
-  { id: "APT-003", doctor: "Dr. Nusrat Jahan", spec: "Physiotherapist", date: "28 Apr 2025", time: "11:00 AM", status: "completed", type: "Consultation" },
-  { id: "APT-004", doctor: "Dr. Amina Khanam", spec: "Neurologist", date: "10 Apr 2025", time: "9:30 AM", status: "completed", type: "Follow-up" },
-  { id: "APT-005", doctor: "Dr. Rafiq Hossain", spec: "Physiotherapist", date: "02 Mar 2025", time: "3:00 PM", status: "cancelled", type: "Therapy Session" },
-];
 
 const PRESCRIPTIONS = [
   {
@@ -57,7 +42,7 @@ const BILLS = [
 ];
 
 const DOCTORS_BOOK = [
-  { id: 1, name: "Dr. Amina Khanam", spec: "Neurology & Rehabilitation", slots: ["9:00 AM", "10:30 AM", "2:00 PM"] },
+  { id: 1, name: "Mahade Hasan Faisal", spec: "Neurology & Rehabilitation", slots: ["9:00 AM", "10:30 AM", "2:00 PM"] },
   { id: 2, name: "Dr. Rafiq Hossain", spec: "Spinal Cord & Physiotherapy", slots: ["10:00 AM", "11:30 AM", "3:30 PM"] },
   { id: 3, name: "Dr. Nusrat Jahan", spec: "Physiotherapy & Mobility", slots: ["9:30 AM", "1:00 PM", "4:00 PM"] },
 ];
@@ -299,138 +284,753 @@ const STYLES = `
 
 // ─── Sub-pages ─────────────────────────────────────────────────────────────
 
-function Dashboard({ setPage }) {
-  const upcoming = APPOINTMENTS.filter((a) => a.status === "upcoming");
-  return (
-    <div className="fade-in">
-      {/* Welcome */}
-      <div style={{ marginBottom: 28, padding: "24px 28px", background: "linear-gradient(135deg, rgba(201,168,76,0.08), transparent)", border: "1px solid var(--gold-border)", borderRadius: "var(--radius-lg)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div>
-          <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 6 }}>Good morning</div>
-          <div className="serif" style={{ fontSize: 30, fontWeight: 300, marginBottom: 4 }}>Welcome back, <em style={{ color: "var(--gold)" }}>Karim</em></div>
-          <div style={{ fontSize: 13, color: "var(--text3)" }}>Patient ID: {PATIENT.id} · Condition: {PATIENT.condition}</div>
-        </div>
-        <button className="btn-gold sans" onClick={() => setPage("book")}>+ Book Appointment</button>
-      </div>
+// function Dashboard({ setPage }) {
+//   const [appointments, setAppointments] = useState([]);
+//   const [loading, setLoading] = useState(true);
 
-      {/* Stats */}
-      <div className="stats-row">
-        {[
-          { label: "Upcoming", value: "2", sub: "Appointments", icon: "◈" },
-          { label: "Sessions Done", value: "14", sub: "This year", icon: "✓" },
-          { label: "Prescriptions", value: "2", sub: "Active", icon: "◎" },
-          { label: "Outstanding", value: "৳1,300", sub: "Balance due", icon: "◇" },
-        ].map((s) => (
-          <div className="stat-card" key={s.label}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <div className="stat-card-label sans">{s.label}</div>
-              <span style={{ fontSize: 18, opacity: 0.25, color: "var(--gold)" }}>{s.icon}</span>
+//   // Read the logged-in patient from localStorage
+//   const PATIENT = JSON.parse(localStorage.getItem("user")) || {};
+
+//   useEffect(() => {
+//     const fetchDashboardData = async () => {
+//       try {
+//         // Filter appointments by this patient's ID only
+//         const response = await fetch(
+//           `http://localhost:5000/api/appointments?patientId=${PATIENT.patientId}`
+//         );
+//         if (response.ok) {
+//           const result = await response.json();
+//           setAppointments(result.data || []);
+//         }
+//       } catch (error) {
+//         console.error("Dashboard fetch failed:", error);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchDashboardData();
+//   }, []);
+
+//   // Derive counts from real appointment data
+//   const confirmedAppointments = appointments.filter(a => a.status === "confirmed");
+//   const pendingCount = appointments.filter(a => a.status === "pending").length;
+//   const upcomingAppointments = [...confirmedAppointments]
+//     .sort((a, b) => new Date(a.date) - new Date(b.date))
+//     .slice(0, 3);
+
+//   // Due amount comes directly from localStorage (saved at login)
+//   const dueAmount = Number(PATIENT.dueAmount) || 0;
+//   const totalAmount = Number(PATIENT.totalAmount) || 0;
+//   const paidAmount = Number(PATIENT.paidAmount) || 0;
+
+//   if (loading) {
+//     return (
+//       <div style={{ padding: 60, textAlign: "center", color: "var(--text3)", fontFamily: "DM Sans, sans-serif" }}>
+//         Loading overview…
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+
+//       {/* ── Welcome Banner ── */}
+//       <div style={{
+//         background: "var(--navy3)", border: "1px solid var(--gold-border)",
+//         borderRadius: "var(--radius-lg)", padding: "24px 28px",
+//         display: "flex", alignItems: "center", justifyContent: "space-between"
+//       }}>
+//         <div>
+//           <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--text3)", marginBottom: 6 }} className="sans">
+//             Welcome back
+//           </div>
+//           <div style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 30, fontWeight: 300 }}>
+//             {PATIENT.name?.split(" ")[0]} <span style={{ color: "var(--gold)", fontStyle: "italic" }}>
+//               {PATIENT.name?.split(" ").slice(1).join(" ")}
+//             </span>
+//           </div>
+//           <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 4 }} className="sans">
+//             {PATIENT.condition || "Patient"} · ID: {PATIENT.patientId || "N/A"}
+//           </div>
+//         </div>
+
+//         {/* Avatar */}
+//         <div style={{
+//           width: 64, height: 64, borderRadius: "50%", overflow: "hidden",
+//           border: "2px solid var(--gold-border)", flexShrink: 0,
+//           background: "var(--gold-dim)", display: "flex", alignItems: "center",
+//           justifyContent: "center", fontFamily: "Cormorant Garamond, serif",
+//           fontSize: 24, color: "var(--gold)"
+//         }}>
+//           {PATIENT.imageUrl ? (
+//             <img src={PATIENT.imageUrl} alt={PATIENT.name}
+//               style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+//           ) : (
+//             PATIENT.avatar || "P"
+//           )}
+//         </div>
+//       </div>
+
+//       {/* ── 4 KPI Cards ── */}
+//       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+//         {[
+//           { label: "Total Appointments", value: appointments.length, color: "var(--gold)" },
+//           { label: "Confirmed", value: confirmedAppointments.length, color: "var(--success)" },
+//           { label: "Pending Approval", value: pendingCount, color: "var(--warning)" },
+//           { label: "Amount Due", value: `৳${dueAmount.toLocaleString()}`, color: dueAmount > 0 ? "var(--danger)" : "var(--success)" },
+//         ].map((s, i) => (
+//           <div key={i} className="card" style={{ transition: "border-color 0.2s" }}
+//             onMouseEnter={e => e.currentTarget.style.borderColor = "var(--gold-border)"}
+//             onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}
+//           >
+//             <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text3)", marginBottom: 10 }} className="sans">
+//               {s.label}
+//             </div>
+//             <div style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 36, fontWeight: 300, color: s.color, lineHeight: 1 }}>
+//               {s.value}
+//             </div>
+//           </div>
+//         ))}
+//       </div>
+
+//       {/* ── Bottom Row: Upcoming Appointments + Billing Summary ── */}
+//       <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 20 }}>
+
+//         {/* Upcoming / Confirmed Appointments */}
+//         <div className="card">
+//           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+//             <div style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 20 }}>
+//               Upcoming <span style={{ color: "var(--gold)", fontStyle: "italic" }}>Appointments</span>
+//             </div>
+//             <button className="link-btn sans" onClick={() => setPage("appointments")}>
+//               View all →
+//             </button>
+//           </div>
+
+//           {upcomingAppointments.length === 0 ? (
+//             <div className="empty-state">
+//               <div className="empty-state-icon">◈</div>
+//               <div className="empty-state-text sans">No confirmed appointments yet</div>
+//             </div>
+//           ) : (
+//             upcomingAppointments.map((a) => {
+//               const dateParts = a.date?.includes("-")
+//                 ? (() => {
+//                     const [, m, d] = a.date.split("-");
+//                     const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+//                     return { day: d, mon: months[parseInt(m) - 1] };
+//                   })()
+//                 : { day: a.date?.split(" ")[0], mon: a.date?.split(" ")[1] };
+
+//               return (
+//                 <div key={a._id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderBottom: "1px solid var(--border)" }}>
+//                   <div className="appt-date-box">
+//                     <div className="appt-date-day serif">{dateParts.day}</div>
+//                     <div className="appt-date-mon sans">{dateParts.mon}</div>
+//                   </div>
+//                   <div style={{ flex: 1 }}>
+//                     <div style={{ fontSize: 14, fontWeight: 500, color: "var(--text)" }} className="sans">
+//                       {a.doctorName}
+//                     </div>
+//                     <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 3 }} className="sans">
+//                       {a.type} · {a.timeSlot}
+//                     </div>
+//                   </div>
+//                   <span className="badge badge-confirmed">confirmed</span>
+//                 </div>
+//               );
+//             })
+//           )}
+
+//           <button className="btn-outline sans" style={{ width: "100%", marginTop: 16, fontSize: 11 }}
+//             onClick={() => setPage("book")}>
+//             + Book New Appointment
+//           </button>
+//         </div>
+
+//         {/* Billing Summary */}
+//         <div className="card" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+//           <div style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 20, marginBottom: 2 }}>
+//             Billing <span style={{ color: "var(--gold)", fontStyle: "italic" }}>Summary</span>
+//           </div>
+
+//           {[
+//             { label: "Total Billed", value: totalAmount, color: "var(--text)" },
+//             { label: "Amount Paid", value: paidAmount, color: "var(--success)" },
+//             { label: "Balance Due", value: dueAmount, color: dueAmount > 0 ? "var(--danger)" : "var(--success)" },
+//           ].map((b, i) => (
+//             <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid var(--border)" }}>
+//               <span style={{ fontSize: 13, color: "var(--text3)" }} className="sans">{b.label}</span>
+//               <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 22, color: b.color }}>
+//                 ৳{Number(b.value).toLocaleString()}
+//               </span>
+//             </div>
+//           ))}
+
+//           {/* Progress bar showing how much is paid */}
+//           <div>
+//             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text3)", marginBottom: 6 }} className="sans">
+//               <span>Payment progress</span>
+//               <span>{totalAmount > 0 ? Math.round((paidAmount / totalAmount) * 100) : 0}%</span>
+//             </div>
+//             <div style={{ background: "var(--navy3)", borderRadius: 4, height: 5, overflow: "hidden" }}>
+//               <div style={{
+//                 height: "100%", borderRadius: 4,
+//                 width: totalAmount > 0 ? `${Math.round((paidAmount / totalAmount) * 100)}%` : "0%",
+//                 background: dueAmount > 0
+//                   ? "linear-gradient(90deg, var(--warning), var(--danger))"
+//                   : "var(--success)",
+//                 transition: "width 1s ease"
+//               }} />
+//             </div>
+//           </div>
+
+//           {dueAmount > 0 && (
+//             <button className="btn-gold sans" style={{ width: "100%", marginTop: 4 }}
+//               onClick={() => setPage("bills")}>
+//               Pay ৳{dueAmount.toLocaleString()} Now
+//             </button>
+//           )}
+//         </div>
+
+//       </div>
+//     </div>
+//   );
+// }
+
+
+function Sparkline({ data, color = "#c9a84c", height = 36, width = 90 }) {
+  if (!data || data.length < 2) return null;
+  const max = Math.max(...data), min = Math.min(...data);
+  const range = max - min || 1;
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * width;
+    const y = height - ((v - min) / range) * (height - 4) - 2;
+    return `${x},${y}`;
+  }).join(" ");
+  const fillPts = `0,${height} ${pts} ${width},${height}`;
+  return (
+    <svg width={width} height={height} style={{ display: "block" }}>
+      <defs>
+        <linearGradient id={`sg${color.replace(/[^a-z0-9]/gi, "")}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon points={fillPts} fill={`url(#sg${color.replace(/[^a-z0-9]/gi, "")})`} />
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+    </svg>
+  );
+}
+ 
+// ─── Animated Counter ──────────────────────────────────────────────────────────
+function AnimCount({ to, duration = 900 }) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    let start = null;
+    const step = (ts) => {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / duration, 1);
+      setVal(Math.floor(p * to));
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [to]);
+  return <>{val}</>;
+}
+ 
+// ─── Dashboard ─────────────────────────────────────────────────────────────────
+function Dashboard({ setPage }) {
+  const [appointments, setAppointments] = useState([]);
+  const [patientData, setPatientData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+ 
+  // Read stored user — used as fallback while API loads
+  const storedUser = JSON.parse(localStorage.getItem("user")) || {};
+ 
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        setError(null);
+ 
+        // Run both requests in parallel
+        const [patientRes, apptRes] = await Promise.all([
+          fetch(`http://localhost:5000/users/patient-by-email?email=${encodeURIComponent(storedUser.email || "")}`),
+          fetch(`http://localhost:5000/api/appointments?patientId=${encodeURIComponent(storedUser.patientId || "")}`),
+        ]);
+ 
+        const patientJson = await patientRes.json();
+        const apptJson = await apptRes.json();
+ 
+        // Debug logs — remove once confirmed working
+        console.log("PATIENT FROM API:", patientJson);
+        console.log("APPOINTMENTS FROM API:", apptJson);
+ 
+        if (patientJson.success && patientJson.patient) {
+          setPatientData(patientJson.patient);
+          // Refresh localStorage so other pages also get fresh data
+          const refreshed = {
+            ...storedUser,
+            ...patientJson.patient,
+            role: "patient",
+            avatar: (patientJson.patient.name || "P")
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .slice(0, 2)
+              .toUpperCase(),
+          };
+          localStorage.setItem("user", JSON.stringify(refreshed));
+        }
+ 
+        if (apptJson.success) {
+          setAppointments(apptJson.data || []);
+        }
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+        setError("Could not connect to server. Showing cached data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+ 
+    fetchAll();
+  }, []);
+ 
+  // Always prefer live API data, fall back to localStorage
+  const PATIENT = patientData || storedUser;
+ 
+  // ── Appointment calculations (from API) ──────────────────────────────────
+  const totalAppointments = appointments.length;
+  const confirmedAppointments = appointments.filter((a) => a.status === "confirmed");
+  const pendingAppointments = appointments.filter((a) => a.status === "pending");
+  const upcomingAppointments = [...confirmedAppointments]
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .slice(0, 3);
+ 
+  // ── Billing calculations (from live patient record) ──────────────────────
+  const totalAmount = Number(PATIENT.totalAmount) || 0;
+  const paidAmount = Number(PATIENT.paidAmount) || 0;
+  const dueAmount = Number(PATIENT.dueAmount) || 0;
+  const paymentPercent = totalAmount > 0 ? Math.round((paidAmount / totalAmount) * 100) : 0;
+ 
+  // ── Parse date string to { day, mon } ────────────────────────────────────
+  const parseDate = (dateStr) => {
+    if (!dateStr) return { day: "--", mon: "---" };
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    if (dateStr.includes("-")) {
+      const [, m, d] = dateStr.split("-");
+      return { day: d, mon: months[parseInt(m, 10) - 1] || "---" };
+    }
+    const parts = dateStr.split(" ");
+    return { day: parts[0] || "--", mon: parts[1] || "---" };
+  };
+ 
+  // ── Loading state ─────────────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <div style={{
+        padding: 60, textAlign: "center",
+        color: "var(--text3)", fontFamily: "DM Sans, sans-serif", fontSize: 14,
+      }}>
+        Loading your dashboard…
+      </div>
+    );
+  }
+ 
+  return (
+    <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+ 
+      {/* ── Error banner (shows if API failed, using cached data) ── */}
+      {error && (
+        <div style={{
+          padding: "12px 18px", borderRadius: "var(--radius)",
+          background: "rgba(232,160,48,0.08)", border: "1px solid rgba(232,160,48,0.25)",
+          fontSize: 12, color: "var(--warning)", fontFamily: "DM Sans, sans-serif",
+        }}>
+          ⚠ {error}
+        </div>
+      )}
+ 
+      {/* ── Welcome Banner ── */}
+      <div style={{
+        background: "var(--navy3)", border: "1px solid var(--gold-border)",
+        borderRadius: "var(--radius-lg)", padding: "26px 30px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        position: "relative", overflow: "hidden",
+      }}>
+        {/* Decorative rings */}
+        <div style={{ position: "absolute", right: 160, top: -50, width: 200, height: 200, borderRadius: "50%", border: "1px solid rgba(201,168,76,0.06)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", right: 90, top: -30, width: 290, height: 290, borderRadius: "50%", border: "1px solid rgba(201,168,76,0.03)", pointerEvents: "none" }} />
+ 
+        <div>
+          <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--text3)", marginBottom: 8, fontFamily: "DM Sans, sans-serif" }}>
+            Welcome back
+          </div>
+          <div style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 32, fontWeight: 300, lineHeight: 1.15 }}>
+            {PATIENT.name?.split(" ")[0]}{" "}
+            <span style={{ color: "var(--gold)", fontStyle: "italic" }}>
+              {PATIENT.name?.split(" ").slice(1).join(" ")}
+            </span>
+          </div>
+          <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 5, fontFamily: "DM Sans, sans-serif" }}>
+            {PATIENT.condition || "Patient"} · ID: {PATIENT.patientId || "N/A"}
+          </div>
+          {PATIENT.assignedDoctor && (
+            <div style={{ fontSize: 12, color: "var(--gold)", marginTop: 3, fontFamily: "DM Sans, sans-serif" }}>
+              Care by {PATIENT.assignedDoctor}
             </div>
-            <div className="stat-card-value serif">{s.value}</div>
-            <div className="stat-card-sub sans">{s.sub}</div>
+          )}
+        </div>
+ 
+        {/* Avatar */}
+        <div style={{
+          width: 70, height: 70, borderRadius: "50%", overflow: "hidden",
+          border: "2px solid var(--gold-border)", flexShrink: 0,
+          background: "var(--gold-dim)", display: "flex", alignItems: "center",
+          justifyContent: "center", fontFamily: "Cormorant Garamond, serif",
+          fontSize: 26, color: "var(--gold)",
+        }}>
+          {PATIENT.imageUrl ? (
+            <img src={PATIENT.imageUrl} alt={PATIENT.name}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            PATIENT.avatar || "P"
+          )}
+        </div>
+      </div>
+ 
+      {/* ── 4 KPI Cards ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+        {[
+          {
+            label: "Total Appointments",
+            value: totalAppointments,
+            sub: "All time",
+            color: "var(--gold)",
+            spark: [2, 3, 2, 4, 3, 4, totalAppointments],
+          },
+          {
+            label: "Confirmed",
+            value: confirmedAppointments.length,
+            sub: "Approved by admin",
+            color: "var(--success)",
+            spark: [1, 2, 1, 3, 2, 3, confirmedAppointments.length],
+          },
+          {
+            label: "Pending Approval",
+            value: pendingAppointments.length,
+            sub: "Awaiting admin",
+            color: "var(--warning)",
+            spark: [1, 1, 2, 1, 2, 1, pendingAppointments.length],
+          },
+          {
+            label: "Amount Due",
+            value: `৳${dueAmount.toLocaleString()}`,
+            sub: dueAmount > 0 ? "Payment pending" : "All clear!",
+            color: dueAmount > 0 ? "var(--danger)" : "var(--success)",
+            spark: null,
+          },
+        ].map((s, i) => (
+          <div
+            key={i}
+            style={{
+              background: "var(--navy2)", border: "1px solid var(--border)",
+              borderRadius: "var(--radius-lg)", padding: "20px 22px",
+              transition: "border-color 0.2s", cursor: "default",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--gold-border)")}
+            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+          >
+            <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text3)", fontFamily: "DM Sans, sans-serif", marginBottom: 10 }}>
+              {s.label}
+            </div>
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+              <div style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 38, fontWeight: 300, color: s.color, lineHeight: 1 }}>
+                {typeof s.value === "number" ? <AnimCount to={s.value} /> : s.value}
+              </div>
+              {s.spark && <Sparkline data={s.spark} color={s.color} />}
+            </div>
+            <div style={{ fontSize: 11, color: "var(--text3)", fontFamily: "DM Sans, sans-serif", marginTop: 6 }}>
+              {s.sub}
+            </div>
           </div>
         ))}
       </div>
-
-      <div className="grid-2" style={{ gap: 20 }}>
-        {/* Upcoming appointments */}
-        <div className="card">
-          <div className="section-hd">
-            <div className="section-hd-title serif">Upcoming <span>Appointments</span></div>
-            <button className="link-btn sans" onClick={() => setPage("appointments")}>View all →</button>
+ 
+      {/* ── Bottom Row ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 20 }}>
+ 
+        {/* Upcoming / Confirmed Appointments */}
+        <div style={{ background: "var(--navy2)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: "24px 26px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+            <div style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 20 }}>
+              Upcoming <span style={{ color: "var(--gold)", fontStyle: "italic" }}>Appointments</span>
+            </div>
+            <button
+              className="link-btn sans"
+              onClick={() => setPage("appointments")}
+              style={{ fontSize: 11 }}
+            >
+              View all →
+            </button>
           </div>
-          {upcoming.length === 0 ? (
-            <div className="empty-state"><div className="empty-state-icon">◈</div><div className="empty-state-text sans">No upcoming appointments</div></div>
+ 
+          {upcomingAppointments.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state-icon">◈</div>
+              <div className="empty-state-text sans">
+                {pendingAppointments.length > 0
+                  ? `${pendingAppointments.length} appointment(s) awaiting confirmation`
+                  : "No confirmed appointments yet"}
+              </div>
+            </div>
           ) : (
-            upcoming.map((a) => {
-              const [day, mon] = a.date.split(" ");
+            upcomingAppointments.map((a) => {
+              const { day, mon } = parseDate(a.date);
               return (
-                <div className="appt-item" key={a.id}>
+                <div key={a._id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderBottom: "1px solid var(--border)" }}>
                   <div className="appt-date-box">
                     <div className="appt-date-day serif">{day}</div>
                     <div className="appt-date-mon sans">{mon}</div>
                   </div>
-                  <div className="appt-info">
-                    <div className="appt-doctor sans">{a.doctor}</div>
-                    <div className="appt-meta sans">{a.type} · {a.spec}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: "var(--text)", fontFamily: "DM Sans, sans-serif", marginBottom: 3 }}>
+                      {a.doctorName || "Doctor"}
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--text3)", fontFamily: "DM Sans, sans-serif" }}>
+                      {a.type} · {a.specialisation} · {a.timeSlot}
+                    </div>
+                    {a.notes && (
+                      <div style={{ fontSize: 11, color: "var(--text2)", fontStyle: "italic", marginTop: 3, fontFamily: "DM Sans, sans-serif" }}>
+                        "{a.notes}"
+                      </div>
+                    )}
                   </div>
-                  <div className="appt-time sans">{a.time}</div>
+                  <span className="badge badge-confirmed">confirmed</span>
                 </div>
               );
             })
           )}
+ 
+          {/* Pending notice */}
+          {pendingAppointments.length > 0 && (
+            <div style={{
+              marginTop: 14, padding: "10px 14px",
+              background: "rgba(232,160,48,0.06)", border: "1px solid rgba(232,160,48,0.2)",
+              borderRadius: "var(--radius)", display: "flex", alignItems: "center", justifyContent: "space-between",
+            }}>
+              <span style={{ fontSize: 12, color: "var(--warning)", fontFamily: "DM Sans, sans-serif" }}>
+                {pendingAppointments.length} appointment(s) awaiting admin approval
+              </span>
+              <button
+                className="link-btn sans"
+                onClick={() => setPage("appointments")}
+                style={{ fontSize: 11, color: "var(--warning)" }}
+              >
+                View →
+              </button>
+            </div>
+          )}
+ 
+          <button
+            className="btn-outline sans"
+            style={{ width: "100%", marginTop: 16, fontSize: 11 }}
+            onClick={() => setPage("book")}
+          >
+            + Book New Appointment
+          </button>
         </div>
-
-        {/* Recovery progress */}
-        <div className="card">
-          <div className="section-hd">
-            <div className="section-hd-title serif">Recovery <span>Progress</span></div>
+ 
+        {/* Billing Summary */}
+        <div style={{ background: "var(--navy2)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: "24px 26px", display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 20 }}>
+            Billing <span style={{ color: "var(--gold)", fontStyle: "italic" }}>Summary</span>
           </div>
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontSize: 13, color: "var(--text2)" }} className="sans">Left-side Motor Function</span>
-              <span style={{ fontSize: 13, color: "var(--gold)" }} className="sans">68%</span>
+ 
+          {[
+            { label: "Total Billed", value: totalAmount, color: "var(--text)" },
+            { label: "Amount Paid", value: paidAmount, color: "var(--success)" },
+            { label: "Balance Due", value: dueAmount, color: dueAmount > 0 ? "var(--danger)" : "var(--success)" },
+          ].map((b, i) => (
+            <div key={i} style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              padding: "11px 0", borderBottom: "1px solid var(--border)",
+            }}>
+              <span style={{ fontSize: 13, color: "var(--text3)", fontFamily: "DM Sans, sans-serif" }}>{b.label}</span>
+              <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 22, color: b.color }}>
+                ৳{Number(b.value).toLocaleString()}
+              </span>
             </div>
-            <div className="recovery-bar-wrap"><div className="recovery-bar" style={{ width: "68%" }} /></div>
-          </div>
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontSize: 13, color: "var(--text2)" }} className="sans">Speech Clarity</span>
-              <span style={{ fontSize: 13, color: "var(--gold)" }} className="sans">84%</span>
+          ))}
+ 
+          {/* Payment progress */}
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text3)", marginBottom: 6, fontFamily: "DM Sans, sans-serif" }}>
+              <span>Payment progress</span>
+              <span>{paymentPercent}%</span>
             </div>
-            <div className="recovery-bar-wrap"><div className="recovery-bar" style={{ width: "84%" }} /></div>
-          </div>
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontSize: 13, color: "var(--text2)" }} className="sans">Balance & Coordination</span>
-              <span style={{ fontSize: 13, color: "var(--gold)" }} className="sans">52%</span>
+            <div style={{ background: "var(--navy3)", borderRadius: 4, height: 5, overflow: "hidden" }}>
+              <div style={{
+                height: "100%", borderRadius: 4,
+                width: `${paymentPercent}%`,
+                background: dueAmount > 0
+                  ? "linear-gradient(90deg, var(--warning), var(--danger))"
+                  : "var(--success)",
+                transition: "width 1.2s ease",
+              }} />
             </div>
-            <div className="recovery-bar-wrap"><div className="recovery-bar" style={{ width: "52%" }} /></div>
           </div>
-          <div style={{ marginBottom: 4 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontSize: 13, color: "var(--text2)" }} className="sans">Grip Strength</span>
-              <span style={{ fontSize: 13, color: "var(--gold)" }} className="sans">45%</span>
+ 
+          {/* Sessions */}
+          {PATIENT.sessions !== undefined && (
+            <div style={{
+              padding: "10px 14px", background: "var(--navy3)",
+              border: "1px solid var(--border)", borderRadius: "var(--radius)",
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+            }}>
+              <span style={{ fontSize: 12, color: "var(--text3)", fontFamily: "DM Sans, sans-serif" }}>Total Sessions</span>
+              <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 22, color: "var(--gold)" }}>
+                {PATIENT.sessions}
+              </span>
             </div>
-            <div className="recovery-bar-wrap"><div className="recovery-bar" style={{ width: "45%" }} /></div>
-          </div>
-          <div style={{ marginTop: 18, padding: "12px 14px", background: "var(--navy3)", borderRadius: "var(--radius)", fontSize: 12, color: "var(--text3)", lineHeight: 1.6 }} className="sans">
-            📋 Last updated by Dr. Amina Khanam · 28 Apr 2025
-          </div>
+          )}
+ 
+          {dueAmount > 0 ? (
+            <button className="btn-gold sans" style={{ width: "100%", marginTop: 4 }} onClick={() => setPage("bills")}>
+              Pay ৳{dueAmount.toLocaleString()} Now
+            </button>
+          ) : (
+            <div style={{
+              padding: "10px 14px", background: "rgba(46,184,122,0.06)",
+              border: "1px solid rgba(46,184,122,0.2)", borderRadius: "var(--radius)",
+              fontSize: 12, color: "var(--success)", fontFamily: "DM Sans, sans-serif", textAlign: "center",
+            }}>
+              ✓ No outstanding balance
+            </div>
+          )}
         </div>
+ 
       </div>
-
-      {/* Recent prescription */}
-      <div style={{ marginTop: 20 }}>
-        <div className="card">
-          <div className="section-hd">
-            <div className="section-hd-title serif">Latest <span>Prescription</span></div>
-            <button className="link-btn sans" onClick={() => setPage("prescriptions")}>View all →</button>
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-            {PRESCRIPTIONS[0].medicines.map((m, i) => (
-              <div key={i} className="med-item" style={{ minWidth: 180 }}>
-                <div className="med-name sans">{m.name} — {m.dose}</div>
-                <div className="med-detail sans">{m.freq} · {m.duration}</div>
+ 
+      {/* ── Quick Actions ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+        {[
+          { label: "Book Appointment", icon: "✦", page: "book", desc: "Schedule a new visit" },
+          { label: "My Appointments", icon: "◈", page: "appointments", desc: `${totalAppointments} total records` },
+          { label: "Prescriptions", icon: "◎", page: "prescriptions", desc: "View medications" },
+          { label: "Bills & Receipts", icon: "◇", page: "bills", desc: dueAmount > 0 ? `৳${dueAmount.toLocaleString()} due` : "All paid" },
+        ].map((q, i) => (
+          <button
+            key={i}
+            onClick={() => setPage(q.page)}
+            style={{
+              background: "var(--navy2)", border: "1px solid var(--border)",
+              borderRadius: "var(--radius-lg)", padding: "16px 18px",
+              textAlign: "left", cursor: "pointer", transition: "all 0.2s",
+              display: "flex", alignItems: "center", gap: 12,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--gold-border)";
+              e.currentTarget.style.background = "var(--gold-dim)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--border)";
+              e.currentTarget.style.background = "var(--navy2)";
+            }}
+          >
+            <div style={{
+              width: 36, height: 36, borderRadius: 8, flexShrink: 0,
+              background: "rgba(201,168,76,0.07)", border: "1px solid var(--gold-border)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 15, color: "var(--gold)",
+            }}>
+              {q.icon}
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text)", fontFamily: "DM Sans, sans-serif", marginBottom: 2 }}>
+                {q.label}
               </div>
-            ))}
-          </div>
-          <div className="rx-therapy sans" style={{ marginTop: 14 }}>
-            🌿 {PRESCRIPTIONS[0].therapy}
-          </div>
-        </div>
+              <div style={{ fontSize: 11, color: "var(--text3)", fontFamily: "DM Sans, sans-serif" }}>
+                {q.desc}
+              </div>
+            </div>
+          </button>
+        ))}
       </div>
+ 
     </div>
   );
 }
+ 
 
 function Appointments({ setPage }) {
   const [filter, setFilter] = useState("all");
-  const filtered = filter === "all" ? APPOINTMENTS : APPOINTMENTS.filter((a) => a.status === filter);
+  const [appointments, setAppointments] = useState([]); 
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/appointments");
+        if (response.ok) {
+          const result = await response.json();
+          // Safety fallback: Ensure we always have an array even if backend database is completely empty
+          setAppointments(result.data || []); 
+        } else {
+          console.error("Failed to retrieve appointments.");
+        }
+      } catch (error) {
+        console.error("Network error fetching appointments:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAppointments();
+  }, []);
+
+  // 🔄 Fix 2: Standardize old 'upcoming' records into 'pending' status so they show up under filters
+  const filtered = filter === "all" 
+    ? appointments 
+    : appointments.filter((a) => {
+        let currentStatus = a.status || "pending";
+        if (currentStatus === "upcoming") currentStatus = "pending"; // Convert old data layout structures
+        return currentStatus === filter;
+      });
+
+  const parseAppointmentDate = (dateString) => {
+    if (!dateString) return { day: "--", mon: "---" };
+    
+    if (dateString.includes("-")) {
+      const [year, month, day] = dateString.split("-");
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      return {
+        day: day,
+        mon: monthNames[parseInt(month, 10) - 1] || "Mon"
+      };
+    }
+    
+    const parts = dateString.split(" ");
+    return {
+      day: parts[0] || "--",
+      mon: parts[1] || "---"
+    };
+  };
+
+  if (loading) {
+    return (
+      <div className="card" style={{ padding: "40px 0", textAlign: "center" }}>
+        <div className="sans" style={{ color: "var(--text3)", fontSize: 14 }}>Loading appointments...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="fade-in">
       <div style={{ display: "flex", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>
-        {["all", "upcoming", "completed", "cancelled"].map((f) => (
+        {["all", "pending", "confirmed", "rejected"].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -450,28 +1050,50 @@ function Appointments({ setPage }) {
 
       <div className="card">
         {filtered.length === 0 ? (
-          <div className="empty-state"><div className="empty-state-icon">◈</div><div className="empty-state-text sans">No appointments found</div></div>
+          <div className="empty-state">
+            <div className="empty-state-icon">◈</div>
+            <div className="empty-state-text sans">No appointments found</div>
+          </div>
         ) : (
           filtered.map((a) => {
-            const [day, mon, yr] = a.date.split(" ");
+            // Normalize status strings safely
+            let currentStatus = a.status || "pending";
+            if (currentStatus === "upcoming") currentStatus = "pending";
+
+            const { day, mon } = parseAppointmentDate(a.date);
+
             return (
-              <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 16, padding: "18px 0", borderBottom: "1px solid var(--border)" }}>
+              <div key={a._id || a.appointmentId} style={{ display: "flex", alignItems: "center", gap: 16, padding: "18px 0", borderBottom: "1px solid var(--border)" }}>
                 <div className="appt-date-box">
                   <div className="appt-date-day serif">{day}</div>
                   <div className="appt-date-mon sans">{mon}</div>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: "var(--text)", marginBottom: 4 }} className="sans">{a.doctor}</div>
-                  <div style={{ fontSize: 12, color: "var(--text3)" }} className="sans">{a.type} · {a.spec} · {a.time}</div>
-                  <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }} className="sans">Ref: {a.id}</div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: "var(--text)", marginBottom: 4 }} className="sans">
+                    {a.doctorName || "Unknown Doctor"}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--text3)" }} className="sans">
+                    {a.type} · {a.specialisation} · {a.timeSlot}
+                  </div>
+                  {a.notes && (
+                    <div style={{ fontSize: 12, color: "var(--text2)", fontStyle: "italic", marginTop: 4 }} className="sans">
+                      "{a.notes}"
+                    </div>
+                  )}
+                  <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 4 }} className="sans">
+                    Ref: {a.appointmentId || "N/A"}
+                  </div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
-                  <span className={`badge badge-${a.status}`}>{a.status}</span>
-                  {a.status === "upcoming" && (
-                    <button className="download-btn sans">Reschedule</button>
+                  {/* Class names updated to safely style your badges */}
+                  <span className={`badge badge-${currentStatus} b-${currentStatus}`}>{currentStatus}</span>
+                  
+                  {/* 🔄 Fix 3: Show Action options dynamically for active/pending requests */}
+                  {currentStatus === "pending" && (
+                    <button className="download-btn sans" style={{opacity: 0.6}}>Awaiting Admin</button>
                   )}
-                  {a.status === "completed" && (
-                    <button className="download-btn sans">View Notes</button>
+                  {currentStatus === "confirmed" && (
+                    <button className="download-btn sans">View Details</button>
                   )}
                 </div>
               </div>
@@ -483,6 +1105,10 @@ function Appointments({ setPage }) {
   );
 }
 
+
+
+// import React, { useState } from "react";
+
 function BookAppointment() {
   const [step, setStep] = useState(1);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
@@ -491,8 +1117,51 @@ function BookAppointment() {
   const [type, setType] = useState("");
   const [notes, setNotes] = useState("");
   const [booked, setBooked] = useState(false);
+  const [loading, setLoading] = useState(false); // Added for UX during network requests
 
   const doctor = DOCTORS_BOOK.find((d) => d.id === selectedDoctor);
+
+  // Function to handle sending data to the backend
+  const handleConfirmBooking = async () => {
+    setLoading(true);
+    
+    // Construct payload matching data pulled from current state and globals
+    const appointmentData = {
+      doctorId: selectedDoctor,
+      doctorName: doctor?.name,
+      specialisation: doctor?.spec,
+      type: type,
+      date: date,
+      timeSlot: selectedSlot,
+      patientName: PATIENT.name,
+      patientId: PATIENT.patientId,
+      notes: notes || ""
+    };
+
+    try {
+      const response = await fetch("http://localhost:5000/api/appointments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(appointmentData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Booking successful:", result);
+        setBooked(true);
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to book appointment: ${errorData.message || "Unknown error"}`);
+      }
+    } catch (error) {
+      console.error("Error connecting to backend:", error);
+      alert("Network error. Could not connect to the booking server.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (booked) {
     return (
@@ -503,7 +1172,7 @@ function BookAppointment() {
           <div className="confirm-sub sans" style={{ marginBottom: 20 }}>
             Your appointment with <strong style={{ color: "var(--text)" }}>{doctor?.name}</strong> on <strong style={{ color: "var(--text)" }}>{date}</strong> at <strong style={{ color: "var(--text)" }}>{selectedSlot}</strong> has been confirmed. A confirmation will be sent to your phone and email.
           </div>
-          <button className="btn-outline sans" onClick={() => { setBooked(false); setStep(1); setSelectedDoctor(null); setSelectedSlot(null); setDate(""); }}>
+          <button className="btn-outline sans" onClick={() => { setBooked(false); setStep(1); setSelectedDoctor(null); setSelectedSlot(null); setDate(""); setNotes(""); setType(""); }}>
             Book Another
           </button>
         </div>
@@ -514,17 +1183,21 @@ function BookAppointment() {
   return (
     <div className="fade-in" style={{ maxWidth: 720 }}>
       {/* Step indicator */}
+      {/* Step indicator */}
       <div className="progress-track" style={{ marginBottom: 36 }}>
-        {["Select Doctor", "Choose Date", "Confirm"].map((label, i) => (
-          <>
-            <div className={`progress-step ${step > i + 1 ? "done" : step === i + 1 ? "active" : ""}`} key={label}>
-              <div className="progress-step-circle">{step > i + 1 ? "✓" : i + 1}</div>
-              <div className="progress-step-label sans">{label}</div>
-            </div>
-            {i < 2 && <div className={`progress-line ${step > i + 1 ? "done" : ""}`} />}
-          </>
-        ))}
+        {["Select Doctor", "Choose Date", "Confirm"].map((label, i) => {
+          return (
+            <React.Fragment key={label}>
+              <div className={`progress-step ${step > i + 1 ? "done" : step === i + 1 ? "active" : ""}`}>
+                <div className="progress-step-circle">{step > i + 1 ? "✓" : i + 1}</div>
+                <div className="progress-step-label sans">{label}</div>
+              </div>
+              {i < 2 && <div className={`progress-line ${step > i + 1 ? "done" : ""}`} />}
+            </React.Fragment>
+          );
+        })}
       </div>
+    
 
       {step === 1 && (
         <div className="fade-in">
@@ -636,8 +1309,10 @@ function BookAppointment() {
             )}
           </div>
           <div style={{ display: "flex", gap: 12 }}>
-            <button className="btn-outline sans" onClick={() => setStep(2)}>← Back</button>
-            <button className="btn-gold sans" onClick={() => setBooked(true)}>Confirm Booking ✦</button>
+            <button className="btn-outline sans" disabled={loading} onClick={() => setStep(2)}>← Back</button>
+            <button className="btn-gold sans" disabled={loading} onClick={handleConfirmBooking}>
+              {loading ? "Booking..." : "Confirm Booking ✦"}
+            </button>
           </div>
         </div>
       )}
@@ -696,68 +1371,249 @@ function Prescriptions() {
   );
 }
 
+// function Bills() {
+//   return (
+//     <div className="fade-in">
+//       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 24 }}>
+//         {[
+//           { label: "Total Billed", value: "৳10,500", sub: "2025 to date", color: "var(--text)" },
+//           { label: "Total Paid", value: "৳9,200", sub: "Across all bills", color: "var(--success)" },
+//           { label: "Outstanding", value: "৳1,300", sub: "Balance due", color: "var(--warning)" },
+//         ].map((s) => (
+//           <div className="card-sm" key={s.label} style={{ textAlign: "center" }}>
+//             <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text3)", marginBottom: 10 }} className="sans">{s.label}</div>
+//             <div className="serif" style={{ fontSize: 36, fontWeight: 300, color: s.color, marginBottom: 4 }}>{s.value}</div>
+//             <div style={{ fontSize: 12, color: "var(--text3)" }} className="sans">{s.sub}</div>
+//           </div>
+//         ))}
+//       </div>
+
+//       <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+//         <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)" }}>
+//           <div className="section-hd-title serif">Bills & <span>Receipts</span></div>
+//         </div>
+//         <table className="bill-table" style={{ width: "100%" }}>
+//           <thead>
+//             <tr>
+//               <th className="sans">Bill</th>
+//               <th className="sans">Date</th>
+//               <th className="sans">Amount</th>
+//               <th className="sans">Status</th>
+//               <th className="sans">Action</th>
+//             </tr>
+//           </thead>
+//           <tbody>
+//             {BILLS.map((b) => (
+//               <tr key={b.id}>
+//                 <td>
+//                   <div className="bill-id sans">{b.id}</div>
+//                   <div className="bill-services sans">{b.services.join(" · ")}</div>
+//                 </td>
+//                 <td className="sans">{b.date}</td>
+//                 <td>
+//                   <div className="bill-amount serif">৳{b.total.toLocaleString()}</div>
+//                   {b.status === "partial" && (
+//                     <div className="bill-paid sans">Paid: ৳{b.paid.toLocaleString()} · Due: ৳{(b.total - b.paid).toLocaleString()}</div>
+//                   )}
+//                 </td>
+//                 <td><span className={`badge badge-${b.status}`}>{b.status}</span></td>
+//                 <td>
+//                   <div style={{ display: "flex", gap: 8 }}>
+//                     <button className="download-btn sans">↓ Receipt</button>
+//                     {b.status === "partial" && <button className="btn-gold sans" style={{ fontSize: 11, padding: "7px 14px" }}>Pay Now</button>}
+//                   </div>
+//                 </td>
+//               </tr>
+//             ))}
+//           </tbody>
+//         </table>
+//       </div>
+
+//       <div style={{ marginTop: 20, padding: "14px 18px", background: "var(--navy2)", border: "1px solid var(--border)", borderRadius: "var(--radius)", fontSize: 12, color: "var(--text3)", display: "flex", alignItems: "center", justifyContent: "space-between" }} className="sans">
+//         <span>💳 Pay outstanding balance securely via bKash, Nagad, or card</span>
+//         <button className="btn-gold sans" style={{ fontSize: 11, padding: "9px 20px" }}>Pay ৳1,300 Now</button>
+//       </div>
+//     </div>
+//   );
+// }
+
+
 function Bills() {
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // 1. EXTRACT LOGGED-IN USER SESSION CONTEXT
+  // Safely handles whatever authentication structure your app uses
+  const loggedInUser = JSON.parse(localStorage.getItem("user")) || {
+    email: "patient@example.com", // Fallback example if no active session
+    role: "patient", 
+    name: "Regular Patient"
+  };
+
+  const DOCTOR_NAME = "Dr. Mahade Hasan Faisal";
+
+  // 2. FETCH LIVE FINANCIAL DATA FROM BACKEND PIPELINE
+  useEffect(() => {
+    const fetchBillingRecords = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/users/patients");
+        if (response.ok) {
+          const result = await response.json();
+          const allPatients = result.patients || [];
+
+          // 🔒 USER-SPECIFIC SECURITY FILTERS
+          if (loggedInUser.role === "doctor" || loggedInUser.email === "mahade@example.com") {
+            // Doctors see all financial records for patients under their care
+            const doctorCohort = allPatients.filter(p => p.assignedDoctor === DOCTOR_NAME);
+            setPatients(doctorCohort);
+          } else {
+            // Patients only see their own personal statement matching their account email
+            const personalRecord = allPatients.filter(p => p.email === loggedInUser.email);
+            setPatients(personalRecord);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to parse financial database clusters:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBillingRecords();
+  }, [loggedInUser.email, loggedInUser.role]);
+
+  // 3. AGGREGATE CALCULATIONS SPECIFIC TO THE VIEWING ACCOUNT
+  const totalBilled = patients.reduce((sum, p) => sum + (Number(p.totalAmount) || 0), 0);
+  const totalPaid = patients.reduce((sum, p) => sum + (Number(p.paidAmount) || 0), 0);
+  const totalOutstanding = patients.reduce((sum, p) => sum + (Number(p.dueAmount) || 0), 0);
+
+  if (loading) {
+    return (
+      <div className="sans" style={{ padding: 40, textAlign: "center", color: "var(--text3)" }}>
+        Verifying user credentials & isolating statements...
+      </div>
+    );
+  }
+
   return (
     <div className="fade-in">
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 24 }}>
+      
+      {/* SCOPED CONTEXT BANNER */}
+      <div style={{ marginBottom: 20 }} className="sans">
+        <span style={{ fontSize: 12, color: "var(--text3)" }}>
+          Showing financial statements securely isolated for:{" "}
+          <strong style={{ color: "var(--gold)" }}>{loggedInUser.name}</strong> ({loggedInUser.role})
+        </span>
+      </div>
+
+      {/* RE-CALCULATED CARD METRICS ACCORDING TO VIEWING USER */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 24 }}>
         {[
-          { label: "Total Billed", value: "৳10,500", sub: "2025 to date", color: "var(--text)" },
-          { label: "Total Paid", value: "৳9,200", sub: "Across all bills", color: "var(--success)" },
-          { label: "Outstanding", value: "৳1,300", sub: "Balance due", color: "var(--warning)" },
+          { label: loggedInUser.role === "doctor" ? "Total Patient Billings" : "Your Total Bill", value: `৳${totalBilled.toLocaleString()}`, color: "var(--text)" },
+          { label: loggedInUser.role === "doctor" ? "Total Revenue Settled" : "Your Total Paid", value: `৳${totalPaid.toLocaleString()}`, color: "var(--success)" },
+          { label: "Outstanding Dues", value: `৳${totalOutstanding.toLocaleString()}`, color: "var(--warning)" },
         ].map((s) => (
-          <div className="card-sm" key={s.label} style={{ textAlign: "center" }}>
+          <div className="card-sm" key={s.label} style={{ textAlign: "center", padding: "20px 14px" }}>
             <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text3)", marginBottom: 10 }} className="sans">{s.label}</div>
-            <div className="serif" style={{ fontSize: 36, fontWeight: 300, color: s.color, marginBottom: 4 }}>{s.value}</div>
-            <div style={{ fontSize: 12, color: "var(--text3)" }} className="sans">{s.sub}</div>
+            <div className="serif" style={{ fontSize: 32, fontWeight: 300, color: s.color, marginBottom: 4 }}>{s.value}</div>
+            <div style={{ fontSize: 11, color: "var(--text3)" }} className="sans">Synced live via Database context</div>
           </div>
         ))}
       </div>
 
+      {/* FILTERED STATEMENT LISTING */}
       <div className="card" style={{ padding: 0, overflow: "hidden" }}>
         <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)" }}>
-          <div className="section-hd-title serif">Bills & <span>Receipts</span></div>
+          <div className="section-hd-title serif">
+            {loggedInUser.role === "doctor" ? "Practice Financial Log" : "My Personal Receipts"}
+          </div>
         </div>
-        <table className="bill-table" style={{ width: "100%" }}>
-          <thead>
-            <tr>
-              <th className="sans">Bill</th>
-              <th className="sans">Date</th>
-              <th className="sans">Amount</th>
-              <th className="sans">Status</th>
-              <th className="sans">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {BILLS.map((b) => (
-              <tr key={b.id}>
-                <td>
-                  <div className="bill-id sans">{b.id}</div>
-                  <div className="bill-services sans">{b.services.join(" · ")}</div>
-                </td>
-                <td className="sans">{b.date}</td>
-                <td>
-                  <div className="bill-amount serif">৳{b.total.toLocaleString()}</div>
-                  {b.status === "partial" && (
-                    <div className="bill-paid sans">Paid: ৳{b.paid.toLocaleString()} · Due: ৳{(b.total - b.paid).toLocaleString()}</div>
-                  )}
-                </td>
-                <td><span className={`badge badge-${b.status}`}>{b.status}</span></td>
-                <td>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <button className="download-btn sans">↓ Receipt</button>
-                    {b.status === "partial" && <button className="btn-gold sans" style={{ fontSize: 11, padding: "7px 14px" }}>Pay Now</button>}
-                  </div>
-                </td>
+        
+        <div style={{ overflowX: "auto" }}>
+          <table className="bill-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ textAlign: "left" }}>
+                <th className="sans" style={{ padding: "12px 24px" }}>Statement Target</th>
+                <th className="sans" style={{ padding: "12px 24px" }}>Treatment Scope</th>
+                <th className="sans" style={{ padding: "12px 24px" }}>Breakdown</th>
+                <th className="sans" style={{ padding: "12px 24px" }}>Status</th>
+                <th className="sans" style={{ padding: "12px 24px" }}>Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {patients.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: "center", padding: "40px", color: "var(--text3)" }} className="sans">
+                    No matching structural billing data linked to this account context.
+                  </td>
+                </tr>
+              ) : (
+                patients.map((p) => {
+                  const due = Number(p.dueAmount) || 0;
+                  const total = Number(p.totalAmount) || 0;
+                  const paid = Number(p.paidAmount) || 0;
+                  
+                  let paymentStatus = "paid";
+                  if (paid === 0 && total > 0) paymentStatus = "unpaid";
+                  else if (due > 0) paymentStatus = "partial";
+
+                  return (
+                    <tr key={p._id || p.patientId} style={{ borderBottom: "1px solid var(--border)" }}>
+                      <td style={{ padding: "16px 24px" }}>
+                        <div className="bill-id sans" style={{ fontWeight: 500, color: "var(--text)" }}>
+                          {p.name || "Anonymous User Record"}
+                        </div>
+                        <div className="bill-services sans" style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>
+                          ID Ref: {p.patientId || "N/A"} · Sessions: {p.sessions || 0}
+                        </div>
+                      </td>
+                      <td className="sans" style={{ padding: "16px 24px", fontSize: 13, color: "var(--text2)" }}>
+                        {p.condition || "Clinical Therapy"}
+                        <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>Care Provider: {p.assignedDoctor || DOCTOR_NAME}</div>
+                      </td>
+                      <td style={{ padding: "16px 24px" }}>
+                        <div className="bill-amount serif" style={{ fontSize: 15, color: "var(--text)" }}>৳{total.toLocaleString()}</div>
+                        {paymentStatus !== "paid" && (
+                          <div className="bill-paid sans" style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>
+                            Settled: ৳{paid.toLocaleString()} · Remainder: ৳{due.toLocaleString()}
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ padding: "16px 24px" }}>
+                        <span className={`badge badge-${paymentStatus}`} style={{ textTransform: "capitalize" }}>
+                          {paymentStatus}
+                        </span>
+                      </td>
+                      <td style={{ padding: "16px 24px" }}>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button className="download-btn sans" style={{ padding: "6px 12px", fontSize: 11 }}>
+                            ↓ PDF
+                          </button>
+                          {due > 0 && loggedInUser.role === "patient" && (
+                            <button className="btn-gold sans" style={{ fontSize: 11, padding: "6px 12px" }}>
+                              Pay Due
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div style={{ marginTop: 20, padding: "14px 18px", background: "var(--navy2)", border: "1px solid var(--border)", borderRadius: "var(--radius)", fontSize: 12, color: "var(--text3)", display: "flex", alignItems: "center", justifyContent: "space-between" }} className="sans">
-        <span>💳 Pay outstanding balance securely via bKash, Nagad, or card</span>
-        <button className="btn-gold sans" style={{ fontSize: 11, padding: "9px 20px" }}>Pay ৳1,300 Now</button>
-      </div>
+      {/* CONTEXTUAL CALL TO ACTION BANNER FOR OUTSTANDING DEBTS */}
+      {totalOutstanding > 0 && loggedInUser.role === "patient" && (
+        <div style={{ marginTop: 20, padding: "14px 18px", background: "var(--navy2)", border: "1px solid var(--border)", borderRadius: "var(--radius)", fontSize: 12, color: "var(--text3)", display: "flex", alignItems: "center", justifyContent: "space-between" }} className="sans">
+          <span>💳 Settle your remaining account balance securely via financial portal gateways</span>
+          <button className="btn-gold sans" style={{ fontSize: 11, padding: "9px 20px" }}>
+            Pay Outstanding ৳{totalOutstanding.toLocaleString()}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -765,9 +1621,17 @@ function Bills() {
 function Profile() {
   const [editing, setEditing] = useState(false);
   return (
-    <div className="fade-in">
-      <div className="profile-header">
-        <div className="profile-avatar serif">{PATIENT.avatar}</div>
+          <div className="fade-in">
+            <div className="profile-header">
+              {/* <div className="profile-avatar serif">{PATIENT.avatar}</div> */}
+              <div className="patient-avatar serif" style={{ overflow: "hidden", padding: 0 }}>
+        {PATIENT.imageUrl ? (
+          <img src={PATIENT.imageUrl} alt={PATIENT.name}
+            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+        ) : (
+          PATIENT.avatar
+        )}
+      </div>
         <div style={{ flex: 1 }}>
           <div className="profile-name serif">{PATIENT.name}</div>
           <div className="profile-condition sans">{PATIENT.condition}</div>
@@ -872,7 +1736,15 @@ export default function PatientPortal({ onLogout }) {
           <div className="logo-sub sans">Patient Portal</div>
         </div>
         <div className="sidebar-patient">
-          <div className="patient-avatar serif">{PATIENT.avatar}</div>
+                    {/* <div className="patient-avatar serif">{PATIENT.avatar}</div> */}
+                    <div className="patient-avatar serif" style={{ overflow: "hidden", padding: 0 }}>
+            {PATIENT.imageUrl ? (
+              <img src={PATIENT.imageUrl} alt={PATIENT.name}
+                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+            ) : (
+              PATIENT.avatar
+            )}
+          </div>
           <div>
             <div className="patient-name sans">{PATIENT.name}</div>
             <div className="patient-id sans">{PATIENT.id}</div>

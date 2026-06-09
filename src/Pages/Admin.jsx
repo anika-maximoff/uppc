@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 const ADMIN = { name: "Dr. Fahmida Islam", role: "Administrator", avatar: "FI" };
@@ -227,6 +228,78 @@ const STYLES = `
   .btn-outline:hover { background: var(--gold-dim); }
   .btn-ghost { background: transparent; color: var(--text3); font-size: 11px; letter-spacing: 0.08em; padding: 8px 14px; border: 1px solid var(--border); border-radius: var(--radius); transition: all 0.2s; }
   .btn-ghost:hover { border-color: var(--gold-border); color: var(--text2); }
+
+//   .modal-backdrop {
+//   position: fixed;
+//   inset: 0;
+//   background: rgba(0,0,0,0.65);
+//   z-index: 999;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+// }
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-w);
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 40px 20px;
+}
+
+// .modal-box {
+//   width: 620px;
+//   max-height: 90vh;
+//   overflow-y: auto;
+//   background: var(--navy2);
+//   border: 1px solid var(--gold-border);
+//   border-radius: var(--radius-lg);
+//   padding: 26px;
+// }
+
+
+.modal-box {
+  width: 620px;
+  max-width: 95%;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--navy2);
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-lg);
+  padding: 26px;
+  margin: auto;
+  flex-shrink: 0;
+}
+
+.modal-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.modal-form input,
+.modal-form select,
+.modal-form textarea {
+  background: var(--navy3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  font-size: 12px;
+}
+
+.modal-form textarea {
+  grid-column: span 2;
+  min-height: 80px;
+}
+
 
   /* Announcement */
   .ann-item { padding: 14px 0; border-bottom: 1px solid var(--border2); }
@@ -480,74 +553,892 @@ function Overview() {
   );
 }
 
-// ─── Patients page ────────────────────────────────────────────────────────────
-function Patients() {
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const filtered = PATIENTS_ALL.filter((p) => {
-    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.id.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "all" || p.status === statusFilter;
-    return matchSearch && matchStatus;
+
+
+function AddPatientModal({ onClose }) {
+  const [form, setForm] = useState({
+    name: "", email: "", password: "", phone: "", age: "", gender: "",
+    condition: "", assignedDoctor: "", sessions: 0, status: "active",
+    totalAmount: 0, paidAmount: 0, address: "", emergencyContact: "", userType: "patient", imageUrl: "",
   });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("http://localhost:5000/users/add-patient", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || data.message || "Failed to add patient"); return; }
+      alert("Patient added successfully");
+      onClose();
+    } catch (error) {
+      alert("Server connection failed");
+    }
+  };
+
   return (
-    <div className="fade">
-      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
-        <input className="search-box" placeholder="Search patient name or ID…" value={search} onChange={(e) => setSearch(e.target.value)} />
-        <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="critical">Critical</option>
-          <option value="discharged">Discharged</option>
-        </select>
-        <div style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
-          <button className="btn-outline">↓ Export</button>
-          <button className="btn-gold">+ Add Patient</button>
+    <div className="modal-backdrop mb-60">
+      <div className="modal-box pt-20">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, paddingBottom: 14, borderBottom: "1px solid var(--border)" }}>
+          <div className="sec-title serif">Add <em>Patient</em></div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 18, lineHeight: 1 }}>✕</button>
         </div>
-      </div>
-      <div className="card" style={{ overflow: "hidden" }}>
-        <table className="tbl">
-          <thead>
-            <tr>
-              <th>Patient</th>
-              <th>Condition</th>
-              <th>Treating Doctor</th>
-              <th>Sessions</th>
-              <th>Balance</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((p) => (
-              <tr key={p.id}>
-                <td>
-                  <div className="tbl-name">{p.name}</div>
-                  <div className="tbl-id">{p.id}</div>
-                  <div className="tbl-sub">Since {p.since}</div>
-                </td>
-                <td style={{ color: "var(--text2)", fontSize: 12 }}>{p.condition}</td>
-                <td style={{ fontSize: 12, color: "var(--text2)" }}>{p.doctor}</td>
-                <td style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, color: "var(--gold)" }}>{p.sessions}</td>
-                <td>
-                  <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: p.balance > 0 ? "var(--warning)" : "var(--success)" }}>
-                    ৳{p.balance.toLocaleString()}
-                  </div>
-                </td>
-                <td><span className={`badge b-${p.status}`}>{p.status}</span></td>
-                <td>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <button className="btn-ghost">View</button>
-                    {p.balance > 0 && <button className="btn-approve" style={{ fontSize: 10 }}>Pay</button>}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <form onSubmit={handleSubmit} className="modal-form">
+          <input name="name" placeholder="Full Name" onChange={handleChange} required />
+          <input name="email" type="email" placeholder="Email" onChange={handleChange} required />
+          <input name="password" type="password" placeholder="Password" onChange={handleChange} required />
+          <input name="phone" placeholder="Phone Number" onChange={handleChange} />
+          <input name="age" type="number" placeholder="Age" onChange={handleChange} />
+          <select name="gender" onChange={handleChange}>
+            <option value="">Select Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+          <input name="condition" placeholder="Medical Condition" onChange={handleChange} required />
+          <input name="assignedDoctor" placeholder="Assigned Doctor" onChange={handleChange} />
+          <input name="sessions" type="number" placeholder="Total Sessions" onChange={handleChange} />
+          <select name="status" onChange={handleChange}>
+            <option value="active">Active</option>
+            <option value="released">Released</option>
+            <option value="critical">Critical</option>
+          </select>
+          <input name="totalAmount" type="number" placeholder="Total Amount (৳)" onChange={handleChange} />
+          <input name="paidAmount" type="number" placeholder="Paid Amount (৳)" onChange={handleChange} />
+          <textarea name="address" placeholder="Address" onChange={handleChange} />
+          <input name="emergencyContact" placeholder="Emergency Contact" onChange={handleChange} />
+          <input name="imageUrl" placeholder="Patient photo URL (e.g. https://...)"
+            onChange={handleChange}
+          />
+          <div style={{ gridColumn: "span 2", display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 4 }}>
+            <button type="button" className="btn-outline" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn-gold">Register Patient</button>
+          </div>
+        </form>
       </div>
     </div>
   );
 }
+
+
+function Patients() {
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [search, setSearch] = useState("");
+
+  const fetchPatients = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/users/patients");
+      const data = await res.json();
+      if (data.success) setPatients(data.patients);
+    } catch (error) {
+      console.error("Failed to connect to server:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchPatients(); }, []);
+
+  const filtered = patients.filter((p) =>
+    p.name?.toLowerCase().includes(search.toLowerCase()) ||
+    p.patientId?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="fade">
+      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
+        <input
+          className="search-box"
+          placeholder="Search patient name or ID…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <div style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
+          {/* <button className="btn-outline">↓ Export</button> */}
+
+
+          <button className="btn-outline" onClick={() => {
+            if (!patients || patients.length === 0) { alert("No patient data to export."); return; }
+            const headers = ["Patient ID", "Name", "Email", "Phone", "Age", "Gender", "Condition", "Assigned Doctor", "Sessions", "Status", "Total Amount", "Paid Amount", "Due Amount", "Address", "Emergency Contact"];
+            const rows = patients.map((p) => [
+              p.patientId || "N/A",
+              p.name || "",
+              p.email || "",
+              p.phone || "",
+              p.age || "",
+              p.gender || "",
+              p.condition || "",
+              p.assignedDoctor || "",
+              p.sessions ?? "",
+              p.status || "active",
+              p.totalAmount || 0,
+              p.paidAmount || 0,
+              p.dueAmount || 0,
+              `"${(p.address || "").replace(/"/g, '""')}"`,
+              p.emergencyContact || "",
+            ]);
+            const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `UPPC_Patients_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}>↓ Export</button>
+          <button className="btn-gold" onClick={() => setIsAddModalOpen(true)}>+ Add Patient</button>
+        </div>
+      </div>
+
+      <div className="card" style={{ overflow: "hidden" }}>
+        {loading ? (
+          <div style={{ padding: "40px", textAlign: "center", color: "var(--text3)", fontSize: 13 }}>
+            Loading patient database…
+          </div>
+        ) : (
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th>Patient</th>
+                <th>Condition</th>
+                <th>Assigned Doctor</th>
+                <th>Sessions</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length > 0 ? (
+                filtered.map((patient) => (
+                  <tr key={patient._id}>
+                    <td>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                       
+                        <div>
+                          {/* <div className="tbl-name">{patient.name}</div> */}
+                          {/* <div style={{ width: 36, height: 36, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
+                            {patient.imageUrl ? (
+                              <img src={patient.imageUrl} alt={patient.name}
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            ) : (
+                              <div className="staff-avatar">
+                                {patient.name?.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                              </div>
+                            )}
+                            <div className="staff-avatar">
+                              {patient.name}
+                            </div>
+                          
+                          </div> */}
+                          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                            {/* 1. AVATAR CONTAINER */}
+                            <div style={{ width: 36, height: 36, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
+                              {patient.imageUrl ? (
+                                <img 
+                                  src={patient.imageUrl} 
+                                  alt={patient.name}
+                                  style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                                />
+                              ) : (
+                                <div className="staff-avatar" style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                  {patient.name?.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* 2. TEXT CONTAINER */}
+                            <div>
+                              <div className="tbl-name" style={{ fontSize: 14, fontWeight: 500, color: "var(--text)" }}>
+                                {patient.name || "Unknown Patient"}
+                              </div>
+                              {patient.patientId && (
+                                <div style={{ fontSize: 11, color: "var(--text3)" }}>
+                                  {patient.patientId}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          {/* <div className="tbl-id">{patient.patientId || "N/A"}</div> */}
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ fontSize: 12, color: "var(--text2)" }}>{patient.condition}</td>
+                    <td style={{ fontSize: 12, color: "var(--text2)" }}>{patient.assignedDoctor || "—"}</td>
+                    <td style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, color: "var(--gold)" }}>
+                      {patient.sessions ?? "—"}
+                    </td>
+                    <td>
+                      <span className={`badge b-${patient.status === "released" ? "discharged" : patient.status || "active"}`}>
+                        {patient.status || "active"}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className="btn-ghost"
+                        onClick={() => setSelectedPatient(patient)}
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" style={{ padding: "32px", textAlign: "center", color: "var(--text3)", fontSize: 13 }}>
+                    No records found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {isAddModalOpen && (
+        <AddPatientModal onClose={() => { setIsAddModalOpen(false); fetchPatients(); }} />
+      )}
+      {selectedPatient && (
+        <PatientDetailsModal
+          patient={selectedPatient}
+          onClose={() => { setSelectedPatient(null); fetchPatients(); }}
+        />
+      )}
+    </div>
+  );
+}
+
+
+// ==========================================================
+// ALL-IN-ONE DETAILS PROFILE MODAL WITH IN-LINE EDIT ENGINES
+// ==========================================================
+
+
+function PatientDetailsModal({ patient, onClose }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [form, setForm] = useState({ ...patient });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`http://localhost:5000/users/patients/${patient._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) { alert("Patient updated successfully!"); onClose(); }
+    } catch { alert("Network error."); }
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm(`Remove ${patient.name} permanently?`)) {
+      try {
+        const res = await fetch(`http://localhost:5000/users/patients/${patient._id}`, { method: "DELETE" });
+        const data = await res.json();
+        if (data.success) { alert("Patient deleted."); onClose(); }
+      } catch { alert("Deletion failed."); }
+    }
+  };
+
+  const Field = ({ label, value, color }) => (
+    <div>
+      <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text3)", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 13, color: color || "var(--text)" }}>{value || "N/A"}</div>
+    </div>
+  );
+
+  return (
+    <div className="modal-backdrop ">
+      <div className="modal-box">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, paddingBottom: 14, borderBottom: "1px solid var(--border)" }}>
+          <div className="sec-title serif">
+            {isEditing ? <>Edit <em>Record</em></> : <>Patient <em>Profile</em></>}
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 18, lineHeight: 1 }}>✕</button>
+        </div>
+
+        {!isEditing ? (
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 20px", marginBottom: 24 }}>
+              <Field label="Patient ID" value={patient.patientId} color="var(--gold)" />
+              <Field label="Full Name" value={patient.name} />
+              <Field label="Email" value={patient.email} />
+              <Field label="Phone" value={patient.phone} />
+              <Field label="Age / Gender" value={`${patient.age || "—"} yrs / ${patient.gender || "—"}`} />
+              <Field label="Condition" value={patient.condition} />
+              <Field label="Assigned Doctor" value={patient.assignedDoctor} />
+              <Field label="Sessions" value={patient.sessions} />
+              <Field label="Total Amount" value={patient.totalAmount ? `৳${Number(patient.totalAmount).toLocaleString()}` : null} color="var(--text)" />
+              <Field label="Paid" value={patient.paidAmount ? `৳${Number(patient.paidAmount).toLocaleString()}` : null} color="var(--success)" />
+              <Field label="Due Balance" value={patient.dueAmount ? `৳${Number(patient.dueAmount).toLocaleString()}` : null} color="var(--warning)" />
+              <div>
+                <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text3)", marginBottom: 4 }}>Status</div>
+                <span className={`badge b-${patient.status === "released" ? "discharged" : patient.status || "active"}`}>
+                  {patient.status || "active"}
+                </span>
+              </div>
+              <div style={{ gridColumn: "span 2" }}>
+                <Field label="Address" value={patient.address} />
+              </div>
+              <div style={{ gridColumn: "span 2" }}>
+                <Field label="Emergency Contact" value={patient.emergencyContact} />
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", paddingTop: 14, borderTop: "1px solid var(--border)" }}>
+              <button className="btn-ghost" onClick={() => setIsEditing(true)}>Edit Record</button>
+              <button className="btn-reject" style={{ fontSize: 11, letterSpacing: "0.08em" }} onClick={handleDelete}>Delete Patient</button>
+            </div>
+          </>
+        ) : (
+          <form onSubmit={handleUpdateSubmit} className="modal-form">
+            <div style={{ gridColumn: "span 2" }}>
+              <input name="name" value={form.name || ""} placeholder="Full Name" onChange={handleChange} required />
+            </div>
+            <input name="email" type="email" value={form.email || ""} placeholder="Email" onChange={handleChange} required />
+            <input name="phone" value={form.phone || ""} placeholder="Phone" onChange={handleChange} />
+            <input name="condition" value={form.condition || ""} placeholder="Condition" onChange={handleChange} required />
+            <input name="assignedDoctor" value={form.assignedDoctor || ""} placeholder="Assigned Doctor" onChange={handleChange} />
+            <input name="sessions" type="number" value={form.sessions || 0} placeholder="Sessions" onChange={handleChange} />
+            <select name="status" value={form.status || "active"} onChange={handleChange}>
+              <option value="active">Active</option>
+              <option value="released">Released</option>
+              <option value="critical">Critical</option>
+            </select>
+            <input name="totalAmount" type="number" value={form.totalAmount || 0} placeholder="Total Amount (৳)" onChange={handleChange} />
+            <input name="paidAmount" type="number" value={form.paidAmount || 0} placeholder="Paid Amount (৳)" onChange={handleChange} />
+            <textarea name="address" value={form.address || ""} placeholder="Address" onChange={handleChange} />
+            <input name="emergencyContact" value={form.emergencyContact || ""} placeholder="Emergency Contact" onChange={handleChange} />
+            <div style={{ gridColumn: "span 2", display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 4 }}>
+              <button type="button" className="btn-outline" onClick={() => setIsEditing(false)}>← Back</button>
+              <button type="submit" className="btn-gold">Save Changes</button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+
+// ==========================================
+// NEW DETACHED EDIT PATIENT MODAL COMPONENT
+// ==========================================
+function EditPatientModal({ patient, onClose }) {
+  const [form, setForm] = useState({ ...patient });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`http://localhost:5000/users/patients/${patient._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert("Patient updated successfully");
+        onClose();
+      } else {
+        alert(data.message || "Failed to update record");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Server connection failure");
+    }
+  };
+
+  return (
+    <div className="modal-backdrop">
+      <div className="modal-box">
+        <h2 className="serif" style={{ marginBottom: 18, color: "#fff" }}>
+          Edit <em style={{ color: "var(--gold, #cfa153)" }}>Patient Records</em>
+        </h2>
+
+        <form onSubmit={handleSubmit} className="modal-form">
+          <input name="name" value={form.name || ""} placeholder="Full Name" onChange={handleChange} required />
+          <input name="email" type="email" value={form.email || ""} placeholder="Email" onChange={handleChange} required />
+          <input name="phone" value={form.phone || ""} placeholder="Phone Number" onChange={handleChange} />
+          <input name="condition" value={form.condition || ""} placeholder="Medical Condition" onChange={handleChange} required />
+          <input name="assignedDoctor" value={form.assignedDoctor || ""} placeholder="Assigned Doctor" onChange={handleChange} />
+          
+          <select name="status" value={form.status || "active"} onChange={handleChange}>
+            <option value="active">Active</option>
+            <option value="released">Released</option>
+            <option value="critical">Critical</option>
+          </select>
+
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: "15px" }}>
+            <button type="button" className="btn-outline" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="btn-gold" style={{ background: "#cfa153", color: "#000", border: "none", padding: "10px 20px", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+
+// function Patients() {
+//   const [patients, setPatients] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [isModalOpen, setIsModalOpen] = useState(false);
+
+//   // Function to fetch patients from your new backend endpoint
+//   const fetchPatients = async () => {
+//     try {
+//       const res = await fetch("http://localhost:5000/users/patients");
+//       const data = await res.json();
+      
+//       if (data.success) {
+//         setPatients(data.patients);
+//       } else {
+//         console.error("Backend error:", data.message);
+//       }
+//     } catch (error) {
+//       console.error("Failed to connect to server:", error);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Run the fetch function automatically when the page loads
+//   useEffect(() => {
+//     fetchPatients();
+//   }, []);
+
+//  return (
+//   <div style={{ padding: "20px", color: "#fff", background: "#0a1128", minHeight: "100vh" }}>
+//     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+//       <h2 style={{ fontFamily: "serif" }}>Patient Records ({patients?.length || 0})</h2>
+//       <button className="btn-gold" style={{ background: "var(--gold, #cfa153)", color: "#000", padding: "10px 20px", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }} onClick={() => setIsModalOpen(true)}>
+//         + ADD PATIENT
+//       </button>
+//     </div>
+
+//     {loading ? (
+//       <p>Loading patient database...</p>
+//     ) : (
+//       <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px", textAlign: "left" }}>
+//         <thead>
+//           <tr style={{ borderBottom: "2px solid #223254", color: "#a0aec0" }}>
+//                <th style={{ padding: "12px 8px" }}>ID</th>
+//             <th style={{ padding: "12px 8px" }}>Name</th>
+//             <th style={{ padding: "12px 8px" }}>Email</th>
+//             <th style={{ padding: "12px 8px" }}>Condition</th>
+//             <th style={{ padding: "12px 8px" }}>Status</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {patients && patients.length > 0 ? (
+//             patients.map((patient) => (
+//               <tr key={patient._id} style={{ borderBottom: "1px solid #1a2744" }}>
+//                 <td style={{ padding: "12px 8px", color: "#cfa153" }}>{patient._id || "N/A"}</td>
+//                 <td style={{ padding: "12px 8px", fontWeight: "bold" }}>{patient.name}</td>
+//                 <td style={{ padding: "12px 8px", color: "#cbd5e1" }}>{patient.email}</td>
+//                 <td style={{ padding: "12px 8px" }}>{patient.condition}</td>
+//                 <td style={{ padding: "12px 8px" }}>
+//                   <span style={{
+//                     padding: "4px 8px",
+//                     borderRadius: "4px",
+//                     fontSize: "12px",
+//                     textTransform: "uppercase",
+//                     background: patient.status === 'active' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+//                     color: patient.status === 'active' ? '#10b981' : '#ef4444'
+//                   }}>
+//                     {patient.status || "active"}
+//                   </span>
+//                 </td>
+//               </tr>
+//             ))
+//           ) : (
+//             <tr>
+//               <td colSpan="5" style={{ padding: "20px", textAlign: "center", color: "#718096" }}>
+//                 No records found. Click "+ ADD PATIENT" to create one!
+//               </td>
+//             </tr>
+//           )}
+//         </tbody>
+//       </table>
+//     )}
+
+//     {isModalOpen && (
+//       <AddPatientModal
+//         onClose={() => {
+//           setIsModalOpen(false);
+//           fetchPatients(); // 🔄 Refreshes your list immediately after adding!
+//         }}
+//       />
+//     )}
+//   </div>
+// );
+// }
+
+// function Patients() {
+//   const [patients, setPatients] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [isModalOpen, setIsModalOpen] = useState(false);
+
+//   const fetchPatients = async () => {
+//     try {
+//       const res = await fetch("http://localhost:5000/users/patients");
+//       const data = await res.json();
+//       if (data.success) {
+//         setPatients(data.patients);
+//       } else {
+//         console.error("Backend error:", data.message);
+//       }
+//     } catch (error) {
+//       console.error("Failed to connect to server:", error);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchPatients();
+//   }, []);
+
+//   // DELETE ACTION HANDLER
+//   const handleDelete = async (id) => {
+//     if (window.confirm("Are you absolutely sure you want to delete this patient record?")) {
+//       try {
+//         const res = await fetch(`http://localhost:5000/users/patients/${id}`, {
+//           method: "DELETE",
+//         });
+//         const data = await res.json();
+
+//         if (data.success) {
+//           alert("Patient removed successfully");
+//           fetchPatients(); // Refresh list immediately
+//         } else {
+//           alert(data.message);
+//         }
+//       } catch (error) {
+//         console.error("Delete error:", error);
+//         alert("Failed to delete patient");
+//       }
+//     }
+//   };
+
+//   // UPDATE ACTION HANDLER
+//   const handleEdit = async (patient) => {
+//     const newName = prompt("Enter new name:", patient.name);
+//     const newCondition = prompt("Enter new medical condition:", patient.condition);
+//     const newStatus = prompt("Enter new status (active/released/critical):", patient.status);
+
+//     // Cancel if prompt was closed or left empty
+//     if (newName === null || newCondition === null || newStatus === null) return;
+
+//     const updatedInfo = {
+//       ...patient,
+//       name: newName || patient.name,
+//       condition: newCondition || patient.condition,
+//       status: newStatus || patient.status,
+//     };
+
+//     try {
+//       const res = await fetch(`http://localhost:5000/users/patients/${patient._id}`, {
+//         method: "PUT",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify(updatedInfo),
+//       });
+//       const data = await res.json();
+
+//       if (data.success) {
+//         alert("Patient updated successfully");
+//         fetchPatients(); // Refresh list immediately
+//       } else {
+//         alert(data.message);
+//       }
+//     } catch (error) {
+//       console.error("Update error:", error);
+//       alert("Failed to update patient");
+//     }
+//   };
+
+//   return (
+//     <div style={{ padding: "20px", color: "#fff", background: "#0a1128", minHeight: "100vh" }}>
+//       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+//         <h2 style={{ fontFamily: "serif" }}>Patient Records ({patients?.length || 0})</h2>
+//         <button className="btn-gold" style={{ background: "var(--gold, #cfa153)", color: "#000", padding: "10px 20px", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }} onClick={() => setIsModalOpen(true)}>
+//           + ADD PATIENT 
+//         </button>
+//       </div>
+
+//       {loading ? (
+//         <p>Loading patient database...</p>
+//       ) : (
+//         <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px", textAlign: "left" }}>
+//           <thead>
+//             <tr style={{ borderBottom: "2px solid #223254", color: "#a0aec0" }}>
+//               <th style={{ padding: "12px 8px" }}>ID</th>
+//               <th style={{ padding: "12px 8px" }}>Name</th>
+//               <th style={{ padding: "12px 8px" }}>Email</th>
+//               <th style={{ padding: "12px 8px" }}>Condition</th>
+//               <th style={{ padding: "12px 8px" }}>Status</th>
+//               <th style={{ padding: "12px 8px" }}>Actions</th>
+//             </tr>
+//           </thead>
+//           <tbody>
+//             {patients && patients.length > 0 ? (
+//               patients.map((patient) => (
+//                 <tr key={patient._id} style={{ borderBottom: "1px solid #1a2744" }}>
+//                   <td style={{ padding: "12px 8px", color: "#cfa153" }}>{patient.patientId || patient._id?.substring(18) || "N/A"}</td>
+//                   <td style={{ padding: "12px 8px", fontWeight: "bold" }}>{patient.name}</td>
+//                   <td style={{ padding: "12px 8px", color: "#cbd5e1" }}>{patient.email}</td>
+//                   <td style={{ padding: "12px 8px" }}>{patient.condition}</td>
+//                   <td style={{ padding: "12px 8px" }}>
+//                     <span style={{
+//                       padding: "4px 8px", 
+//                       borderRadius: "4px", 
+//                       fontSize: "12px", 
+//                       textTransform: "uppercase",
+//                       background: patient.status === 'active' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+//                       color: patient.status === 'active' ? '#10b981' : '#ef4444'
+//                     }}>
+//                       {patient.status || "active"}
+//                     </span>
+//                   </td>
+//                   {/* ACTIONS BUTTONS EXTRA TD */}
+//                   <td style={{ padding: "12px 8px" }}>
+//                     <button 
+//                       onClick={() => handleEdit(patient)} 
+//                       style={{ background: "#3182ce", color: "#fff", border: "none", padding: "6px 12px", marginRight: "8px", borderRadius: "4px", cursor: "pointer" }}
+//                     >
+//                       Edit
+//                     </button>
+//                     <button 
+//                       onClick={() => handleDelete(patient._id)} 
+//                       style={{ background: "#e53e3e", color: "#fff", border: "none", padding: "6px 12px", borderRadius: "4px", cursor: "pointer" }}
+//                     >
+//                       Delete
+//                     </button>
+//                   </td>
+//                 </tr>
+//               ))
+//             ) : (
+//               <tr>
+//                 <td colSpan="6" style={{ padding: "20px", textAlign: "center", color: "#718096" }}>
+//                   No records found. Click "+ ADD PATIENT" to create one!
+//                 </td>
+//               </tr>
+//             )}
+//           </tbody>
+//         </table>
+//       )}
+
+//       {isModalOpen && (
+//         <AddPatientModal 
+//           onClose={() => {
+//             setIsModalOpen(false);
+//             fetchPatients();
+//           }} 
+//         />
+//       )}
+//     </div>
+//   );
+// }
+
+
+// function Patients() {
+//   const [patients, setPatients] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [isModalOpen, setIsModalOpen] = useState(false);
+
+//   // Function to fetch patients from your new backend endpoint
+//   const fetchPatients = async () => {
+//     try {
+//       const res = await fetch("http://localhost:5000/users/add-patient");
+//       const data = await res.json();
+      
+//       if (data.success) {
+//         setPatients(data.patients);
+//       } else {
+//         console.error("Backend error:", data.message);
+//       }
+//     } catch (error) {
+//       console.error("Failed to connect to server:", error);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Run the fetch function automatically when the page loads
+//   useEffect(() => {
+//     fetchPatients();
+//   }, []);
+
+//  return (
+//   <div style={{ padding: "20px", color: "#fff", background: "#0a1128", minHeight: "100vh" }}>
+//     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+//       <h2 style={{ fontFamily: "serif" }}>Patient Records ({patients?.length || 0})</h2>
+//       <button className="btn-gold" style={{ background: "var(--gold, #cfa153)", color: "#000", padding: "10px 20px", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }} onClick={() => setIsModalOpen(true)}>
+//         + ADD PATIENT
+//       </button>
+//     </div>
+
+//     {loading ? (
+//       <p>Loading patient database...</p>
+//     ) : (
+//       <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px", textAlign: "left" }}>
+//         <thead>
+//           <tr style={{ borderBottom: "2px solid #223254", color: "#a0aec0" }}>
+//             <th style={{ padding: "12px 8px" }}>ID</th>
+//             <th style={{ padding: "12px 8px" }}>Name</th>
+//             <th style={{ padding: "12px 8px" }}>Email</th>
+//             <th style={{ padding: "12px 8px" }}>Condition</th>
+//             <th style={{ padding: "12px 8px" }}>Status</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {patients && patients.length > 0 ? (
+//             patients.map((patient) => (
+//               <tr key={patient._id} style={{ borderBottom: "1px solid #1a2744" }}>
+//                 <td style={{ padding: "12px 8px", color: "#cfa153" }}>{patient.patientId || "N/A"}</td>
+//                 <td style={{ padding: "12px 8px", fontWeight: "bold" }}>{patient.name}</td>
+//                 <td style={{ padding: "12px 8px", color: "#cbd5e1" }}>{patient.email}</td>
+//                 <td style={{ padding: "12px 8px" }}>{patient.condition}</td>
+//                 <td style={{ padding: "12px 8px" }}>
+//                   <span style={{
+//                     padding: "4px 8px", 
+//                     borderRadius: "4px", 
+//                     fontSize: "12px", 
+//                     textTransform: "uppercase",
+//                     background: patient.status === 'active' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+//                     color: patient.status === 'active' ? '#10b981' : '#ef4444'
+//                   }}>
+//                     {patient.status || "active"}
+//                   </span>
+//                 </td>
+//               </tr>
+//             ))
+//           ) : (
+//             <tr>
+//               <td colSpan="5" style={{ padding: "20px", textAlign: "center", color: "#718096" }}>
+//                 No records found. Click "+ ADD PATIENT" to create one!
+//               </td>
+//             </tr>
+//           )}
+//         </tbody>
+//       </table>
+//     )}
+
+//     {isModalOpen && (
+//       <AddPatientModal 
+//         onClose={() => {
+//           setIsModalOpen(false);
+//           fetchPatients(); // 🔄 Refreshes your list immediately after adding!
+//         }} 
+//       />
+//     )}
+//   </div>
+// );
+// }
+
+// // ─── Patients page ────────────────────────────────────────────────────────────
+// function Patients() {
+//   const [search, setSearch] = useState("");
+//   const [statusFilter, setStatusFilter] = useState("all");
+//   const [showAddModal, setShowAddModal] = useState(false);
+//   const filtered = PATIENTS_ALL.filter((p) => {
+//     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.id.toLowerCase().includes(search.toLowerCase());
+//     const matchStatus = statusFilter === "all" || p.status === statusFilter;
+//     return matchSearch && matchStatus;
+//   });
+//   return (
+//     <div className="fade">
+//       <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
+//         <input className="search-box" placeholder="Search patient name or ID…" value={search} onChange={(e) => setSearch(e.target.value)} />
+//         <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+//           <option value="all">All Status</option>
+//           <option value="active">Active</option>
+//           <option value="critical">Critical</option>
+//           <option value="discharged">Discharged</option>
+//         </select>
+//         <div style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
+//           <button className="btn-outline">↓ Export</button>
+//           {/* <button className="btn-gold">+ Add Patient</button> */}
+//           <button className="btn-gold" onClick={() => setShowAddModal(true)}>
+//             + Add Patient
+//           </button>
+//         </div>
+//       </div>
+//       <div className="card" style={{ overflow: "hidden" }}>
+//         <table className="tbl">
+//           <thead>
+//             <tr>
+//               <th>Patient</th>
+//               <th>Condition</th>
+//               <th>Treating Doctor</th>
+//               <th>Sessions</th>
+//               <th>Balance</th>
+//               <th>Status</th>
+//               <th>Actions</th>
+//             </tr>
+//           </thead>
+//           <tbody>
+//             {filtered.map((p) => (
+//               <tr key={p.id}>
+//                 <td>
+//                   <div className="tbl-name">{p.name}</div>
+//                   <div className="tbl-id">{p.id}</div>
+//                   <div className="tbl-sub">Since {p.since}</div>
+//                 </td>
+//                 <td style={{ color: "var(--text2)", fontSize: 12 }}>{p.condition}</td>
+//                 <td style={{ fontSize: 12, color: "var(--text2)" }}>{p.doctor}</td>
+//                 <td style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, color: "var(--gold)" }}>{p.sessions}</td>
+//                 <td>
+//                   <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: p.balance > 0 ? "var(--warning)" : "var(--success)" }}>
+//                     ৳{p.balance.toLocaleString()}
+//                   </div>
+//                 </td>
+//                 <td><span className={`badge b-${p.status}`}>{p.status}</span></td>
+//                 <td>
+//                   <div style={{ display: "flex", gap: 6 }}>
+//                     <button className="btn-ghost">View</button>
+//                     {p.balance > 0 && <button className="btn-approve" style={{ fontSize: 10 }}>Pay</button>}
+//                   </div>
+//                 </td>
+//               </tr>
+//             ))}
+//           </tbody>
+//         </table>
+//       </div>
+//       {showAddModal && (
+//         <AddPatientModal onClose={() => setShowAddModal(false)} />
+//       )}
+//     </div>
+//   );
+// }
 
 // ─── Staff/HR page ────────────────────────────────────────────────────────────
 function StaffHR() {
@@ -636,24 +1527,84 @@ function StaffHR() {
 // ─── Appointments page ────────────────────────────────────────────────────────
 function AppointmentsAdmin() {
   const [filter, setFilter] = useState("all");
-  const filtered = filter === "all" ? APPOINTMENTS_TODAY : APPOINTMENTS_TODAY.filter((a) => a.status === filter);
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // 🔄 Fetch all requests from the backend database on initial view mount
+  const fetchAppointments = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/appointments");
+      if (response.ok) {
+        const result = await response.json();
+        setAppointments(result.data);
+      }
+    } catch (error) {
+      console.error("Admin Fetch Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
+
+  // 🔥 Function to dispatch live status modification updates
+  const handleStatusUpdate = async (dbId, newStatus) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/appointments/${dbId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        // Optimize local UI rendering immediately without demanding a full heavy collection reload
+        setAppointments((prev) =>
+          prev.map((apt) => (apt._id === dbId ? { ...apt, status: newStatus } : apt))
+        );
+      } else {
+        alert("Failed to update status on the server.");
+      }
+    } catch (error) {
+      console.error("Status resolution transmission crash:", error);
+    }
+  };
+
+  // Adjusted filtering matches: all, pending, confirmed, or rejected strings
+  const filtered = filter === "all" 
+    ? appointments 
+    : appointments.filter((a) => (a.status || "pending") === filter);
+
+  if (loading) {
+    return <div className="sans" style={{ padding: 40, textAlign: "center", color: "var(--text3)" }}>Loading administration queues...</div>;
+  }
+
   return (
     <div className="fade">
       <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
-        {["all", "confirmed", "pending"].map((f) => (
-          <button key={f} onClick={() => setFilter(f)} style={{ padding: "8px 18px", border: "1px solid", borderRadius: "var(--radius)", fontSize: 11, letterSpacing: "0.08em", textTransform: "capitalize", borderColor: filter === f ? "var(--gold)" : "var(--border)", background: filter === f ? "var(--gold-dim)" : "transparent", color: filter === f ? "var(--gold)" : "var(--text3)", transition: "all 0.2s" }}>
+        {["all", "pending", "confirmed", "rejected"].map((f) => (
+          <button 
+            key={f} 
+            onClick={() => setFilter(f)} 
+            style={{ 
+              padding: "8px 18px", border: "1px solid", borderRadius: "var(--radius)", 
+              fontSize: 11, letterSpacing: "0.08em", textTransform: "capitalize", 
+              borderColor: filter === f ? "var(--gold)" : "var(--border)", 
+              background: filter === f ? "var(--gold-dim)" : "transparent", 
+              color: filter === f ? "var(--gold)" : "var(--text3)", 
+              transition: "all 0.2s" 
+            }}
+          >
             {f}
           </button>
         ))}
-        <div style={{ marginLeft: "auto" }}>
-          <button className="btn-gold">+ Book Appointment</button>
-        </div>
       </div>
       <div className="card" style={{ overflow: "hidden" }}>
         <table className="tbl">
           <thead>
             <tr>
-              <th>Time</th>
+              <th>Date & Time</th>
               <th>Patient</th>
               <th>Doctor</th>
               <th>Type</th>
@@ -663,22 +1614,57 @@ function AppointmentsAdmin() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((a, i) => (
-              <tr key={i}>
-                <td style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: "var(--gold)" }}>{a.time}</td>
-                <td><div className="tbl-name">{a.patient}</div></td>
-                <td style={{ fontSize: 12, color: "var(--text2)" }}>{a.doctor}</td>
-                <td style={{ fontSize: 12, color: "var(--text2)" }}>{a.type}</td>
-                <td style={{ fontSize: 12, color: "var(--text3)" }}>Room {a.room}</td>
-                <td><span className={`badge b-${a.status}`}>{a.status}</span></td>
-                <td>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <button className="btn-ghost">Edit</button>
-                    <button className="btn-reject" style={{ fontSize: 10 }}>Cancel</button>
-                  </div>
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan="7" style={{ textAlign: "center", padding: "24px", color: "var(--text3)" }} className="sans">
+                  No appointments found inside this queue.
                 </td>
               </tr>
-            ))}
+            ) : (
+              filtered.map((a) => (
+                <tr key={a._id}>
+                  {/* Combines Date + Slot into the Time column cleanly */}
+                  <td style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, color: "var(--gold)" }}>
+                    {a.date} <span style={{ fontSize: 12, color: "var(--text3)" }}>({a.timeSlot})</span>
+                  </td>
+                  <td><div className="tbl-name">{a.patientName} <span style={{fontSize: 10, color: 'var(--text3)', display:'block'}}>ID: {a.patientId}</span></div></td>
+                  <td style={{ fontSize: 12, color: "var(--text2)" }}>{a.doctorName}</td>
+                  <td style={{ fontSize: 12, color: "var(--text2)" }}>{a.type}</td>
+                  <td style={{ fontSize: 12, color: "var(--text3)" }}>Room {a.room || "N/A"}</td>
+                  <td>
+                    {/* Maps class conditional naming conventions safely matching native classes */}
+                    <span className={`badge b-${a.status || 'pending'}`}>{a.status || 'pending'}</span>
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {a.status === "pending" && (
+                        <>
+                          <button 
+                            className="btn-ghost" 
+                            style={{ color: "green", borderColor: "green" }}
+                            onClick={() => handleStatusUpdate(a._id, "confirmed")}
+                          >
+                            Accept
+                          </button>
+                          <button 
+                            className="btn-reject" 
+                            style={{ fontSize: 10 }}
+                            onClick={() => handleStatusUpdate(a._id, "rejected")}
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+                      {a.status !== "pending" && (
+                        <span style={{ fontSize: 11, color: "var(--text3)", fontStyle: "italic" }}>
+                          Resolved
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

@@ -1,23 +1,103 @@
+
+
 import { useState } from "react";
 
 export default function Login({ onLogin }) {
   const [role, setRole] = useState("patient");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const users = {
-    patient: { email: "patient@gmail.com", password: "123456" },
-    doctor: { email: "doctor@gmail.com", password: "123456" },
-    admin: { email: "admin@gmail.com", password: "123456" },
+  // Fallback credentials for system managers
+  const systemUsers = {
+    doctor: { email: "doctor@gmail.com", password: "123456", name: "Dr. Mahade Hasan Faisal" },
+    admin: { email: "admin@gmail.com", password: "123456", name: "System Administrator" },
   };
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+    setLoading(true);
 
-    if (email === users[role].email && password === users[role].password) {
-      onLogin(role);
-    } else {
-      alert("Wrong email, password, or role");
+    try {
+      // 🔒 STRATEGY A: LIVE PATIENT REAL-TIME VERIFICATION
+      if (role === "patient") {
+        const response = await fetch("http://localhost:5000/users/patients");
+        
+        if (!response.ok) {
+          throw new Error("Could not contact authentication database cluster.");
+        }
+
+        const data = await response.json();
+        const activePatients = data.patients || [];
+
+        // Query cluster for matching dynamic user document attributes
+        const foundPatient = activePatients.find(
+          (p) => p.email?.toLowerCase().trim() === email.toLowerCase().trim() && 
+                 p.password === password
+        );
+
+        if (foundPatient) {
+          // Commit dynamic user info into localStorage state for downstream components like Bills
+          // AFTER — saves everything the portal needs
+        // SAVE EVERYTHING from the database record
+const sessionUser = {
+  _id: foundPatient._id,
+  email: foundPatient.email,
+  role: "patient",
+  name: foundPatient.name || "Registered Patient",
+  patientId: foundPatient.patientId,
+  phone: foundPatient.phone || "",
+  age: foundPatient.age || "",
+  gender: foundPatient.gender || "",
+  dob: foundPatient.dob || "",
+  address: foundPatient.address || "",
+  bloodGroup: foundPatient.bloodGroup || "",
+  condition: foundPatient.condition || "",
+  assignedDoctor: foundPatient.assignedDoctor || "",
+  since: foundPatient.since || "",
+  sessions: foundPatient.sessions || 0,
+  status: foundPatient.status || "active",
+  totalAmount: foundPatient.totalAmount || 0,
+  paidAmount: foundPatient.paidAmount || 0,
+  dueAmount: foundPatient.dueAmount || 0,
+  emergencyContact: foundPatient.emergencyContact || "",
+  imageUrl: foundPatient.imageUrl || "",
+  avatar: (foundPatient.name || "P")
+    .split(" ")
+    .map(n => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase()
+};
+localStorage.setItem("user", JSON.stringify(sessionUser));
+          
+          // Trigger parental app structural redirection route switch
+          onLogin("patient");
+        } else {
+          alert("Access Denied: No matching registered patient profile found with those credentials.");
+        }
+      } 
+      
+      // 🛠️ STRATEGY B: CORE MANAGERIAL FALLBACK ACCOUNTS
+      else {
+        const staticUser = systemUsers[role];
+        if (email === staticUser.email && password === staticUser.password) {
+          const sessionUser = {
+            email: staticUser.email,
+            role: role,
+            name: staticUser.name
+          };
+          localStorage.setItem("user", JSON.stringify(sessionUser));
+          onLogin(role);
+        } else {
+          alert("Wrong email, password, or administrative tier configuration.");
+        }
+      }
+    } catch (err) {
+      console.error("Authentication handshake failure:", err);
+      alert("Network Error: Verification routine failed to communicate with cluster.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -109,6 +189,12 @@ export default function Login({ onLogin }) {
           letter-spacing: 0.12em;
           text-transform: uppercase;
           cursor: pointer;
+          transition: opacity 0.2s;
+        }
+
+        .login-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
         }
 
         .demo {
@@ -136,7 +222,7 @@ export default function Login({ onLogin }) {
         <div className="field">
           <label>Login As</label>
           <select value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="patient">Patient</option>
+            <option value="patient">Patient (Database Restricted)</option>
             <option value="doctor">Doctor</option>
             <option value="admin">Admin</option>
           </select>
@@ -146,7 +232,8 @@ export default function Login({ onLogin }) {
           <label>Email</label>
           <input
             type="email"
-            placeholder="Enter email"
+            required
+            placeholder="Enter account email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -156,20 +243,20 @@ export default function Login({ onLogin }) {
           <label>Password</label>
           <input
             type="password"
+            required
             placeholder="Enter password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
 
-        <button className="login-btn" type="submit">
-          Login
+        <button className="login-btn" type="submit" disabled={loading}>
+          {loading ? "Verifying..." : "Login"}
         </button>
 
         <div className="demo">
-          <div><span>Patient:</span> patient@gmail.com / 123456</div>
-          <div><span>Doctor:</span> doctor@gmail.com / 123456</div>
-          <div><span>Admin:</span> admin@gmail.com / 123456</div>
+          <div><span>Patient Info:</span> Must match email/password inside your MongoDB <code>/users/patients</code> records list.</div>
+          <div style={{ marginTop: 6 }}><span>Staff Fallbacks:</span> doctor@gmail.com or admin@gmail.com</div>
         </div>
       </form>
     </div>
