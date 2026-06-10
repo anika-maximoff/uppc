@@ -349,6 +349,37 @@ const STYLES = `
   .ii label { display: block; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--text3); margin-bottom: 4px; }
   .ii span { font-size: 13px; color: var(--text); }
 
+  /* ── System Modal Overlay Window ── */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(7, 17, 31, 0.85);
+    backdrop-filter: blur(6px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: modalFadeIn 0.2s ease-out forwards;
+  }
+  .modal-window {
+    background: var(--navy2);
+    border: 1px solid var(--gbord);
+    border-radius: var(--rl);
+    width: 90%;
+    max-width: 650px;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 24px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+  }
+  @keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
   /* ── L-Panel Medicine Cards ── */
   .med-ad-card {
     padding: 12px;
@@ -692,14 +723,250 @@ function LMedicinePanel() {
 }
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────
-function Dashboard({ setPage }) {
+// function Dashboard({ setPage }) {
+//   return (
+//     <div className="fade-in">
+//       <div style={{ marginBottom: 24, padding: "20px 26px", background: "linear-gradient(135deg,rgba(201,168,76,.09),transparent)", border: "1px solid var(--gbord)", borderRadius: "var(--rl)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 14 }}>
+//         <div>
+//           <div style={{ fontSize: 10, letterSpacing: ".2em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 5 }}>Thursday, 15 May 2025</div>
+//           <div className="serif" style={{ fontSize: 28, fontWeight: 300, marginBottom: 3 }}>Good morning, <em style={{ color: "var(--gold)" }}>Dr. Khanam</em></div>
+//           <div style={{ fontSize: 12, color: "var(--text3)" }}>Next patient: <span style={{ color: "var(--text2)" }}>{DOCTOR.nextPatient.name}</span> at <span style={{ color: "var(--gold)" }}>{DOCTOR.nextPatient.time}</span> — {DOCTOR.nextPatient.type}</div>
+//         </div>
+//         <div style={{ display: "flex", gap: 10 }}>
+//           <button className="btn-out" onClick={() => setPage("schedule")}>View Schedule</button>
+//           <button className="btn-gold" onClick={() => setPage("prescribe")}>+ Prescription</button>
+//         </div>
+//       </div>
+
+//       <div className="stats-row">
+//         {[
+//           { lbl: "Today's Patients",  val: "8",   sub: "3 completed · 1 active" },
+//           { lbl: "This Month",        val: "31",  sub: "Patients seen" },
+//           { lbl: "Active Cases",      val: "48",  sub: "Under my care" },
+//           { lbl: "Avg Sessions/pt",   val: "5.8", sub: "Monthly average" },
+//         ].map((s) => (
+//           <div className="stat" key={s.lbl}>
+//             <div className="stat-lbl">{s.lbl}</div>
+//             <div className="stat-val serif">{s.val}</div>
+//             <div className="stat-sub">{s.sub}</div>
+//           </div>
+//         ))}
+//       </div>
+
+//       <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 16, marginBottom: 20 }}>
+//         <div className="card">
+//           <div className="sh">
+//             <div className="sh-title serif">Monthly <span>Patient Volume</span></div>
+//             <div style={{ display: "flex", gap: 16, fontSize: 11, color: "var(--text3)" }}>
+//               <span style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ width: 10, height: 10, borderRadius: 2, background: "var(--gold)", display: "inline-block" }} /> Patients</span>
+//               <span style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ width: 10, height: 10, borderRadius: 2, background: "var(--info)", display: "inline-block" }} /> Sessions</span>
+//             </div>
+//           </div>
+//           <ResponsiveContainer width="100%" height={210}>
+//             <BarChart data={MONTHLY_PATIENTS} barGap={4} barCategoryGap="28%">
+//               <CartesianGrid vertical={false} stroke="rgba(201,168,76,0.07)" />
+//               <XAxis dataKey="month" tick={{ fill: "rgba(221,213,194,0.4)", fontSize: 11 }} axisLine={false} tickLine={false} />
+//               <YAxis tick={{ fill: "rgba(221,213,194,0.3)", fontSize: 11 }} axisLine={false} tickLine={false} width={28} />
+//               <Tooltip content={<CTooltip />} cursor={{ fill: "rgba(201,168,76,0.04)" }} />
+//               <Bar dataKey="patients" name="Patients" fill="#c9a84c" radius={[3,3,0,0]} maxBarSize={22} />
+//               <Bar dataKey="sessions" name="Sessions"  fill="#4a9fd4" radius={[3,3,0,0]} maxBarSize={22} opacity={0.75} />
+//             </BarChart>
+//           </ResponsiveContainer>
+//         </div>
+
+//         <div className="card">
+//           <div className="sh">
+//             <div className="sh-title serif">Patient <span>Condition Mix</span></div>
+//           </div>
+//           <ResponsiveContainer width="100%" height={160}>
+//             <PieChart>
+//               <Pie data={CONDITION_MIX} cx="50%" cy="50%" innerRadius={46} outerRadius={70} paddingAngle={3} dataKey="value">
+//                 {CONDITION_MIX.map((entry, i) => (
+//                   <Cell key={i} fill={entry.color} opacity={0.85} />
+//                 ))}
+//               </Pie>
+//               <Tooltip formatter={(v) => [`${v}%`, ""]} contentStyle={{ background: "var(--navy2)", border: "1px solid var(--bord)", borderRadius: 6, fontSize: 12 }} itemStyle={{ color: "var(--text)" }} />
+//             </PieChart>
+//           </ResponsiveContainer>
+//           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+//             {CONDITION_MIX.map((c) => (
+//               <div key={c.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11 }}>
+//                 <span style={{ display: "flex", alignItems: "center", gap: 7, color: "var(--text3)" }}>
+//                   <span style={{ width: 8, height: 8, borderRadius: 2, background: c.color, display: "inline-block", flexShrink: 0 }} />{c.name}
+//                 </span>
+//                 <span style={{ color: c.color, fontFamily: "'Cormorant Garamond',serif", fontSize: 15 }}>{c.value}%</span>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+//       </div>
+
+//       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+//         <div className="card">
+//           <div className="sh">
+//             <div className="sh-title serif">This Week's <span>Appointments</span></div>
+//           </div>
+//           <ResponsiveContainer width="100%" height={190}>
+//             <AreaChart data={WEEKLY_APPTS}>
+//               <defs>
+//                 <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+//                   <stop offset="10%" stopColor="#c9a84c" stopOpacity={0.25} />
+//                   <stop offset="95%" stopColor="#c9a84c" stopOpacity={0} />
+//                 </linearGradient>
+//               </defs>
+//               <CartesianGrid vertical={false} stroke="rgba(201,168,76,0.06)" />
+//               <XAxis dataKey="day" tick={{ fill: "rgba(221,213,194,0.4)", fontSize: 11 }} axisLine={false} tickLine={false} />
+//               <YAxis tick={{ fill: "rgba(221,213,194,0.3)", fontSize: 11 }} axisLine={false} tickLine={false} width={24} />
+//               <Tooltip content={<CTooltip />} cursor={{ stroke: "rgba(201,168,76,0.15)" }} />
+//               <Area type="monotone" dataKey="appts" name="Appointments" stroke="#c9a84c" strokeWidth={2} fill="url(#goldGrad)" dot={{ fill: "#c9a84c", strokeWidth: 0, r: 4 }} activeDot={{ r: 6, fill: "#e8c97a" }} />
+//             </AreaChart>
+//           </ResponsiveContainer>
+//         </div>
+
+//         <div className="card">
+//           <div className="sh">
+//             <div className="sh-title serif">Today's <span>Queue</span></div>
+//             <button className="lnk" onClick={() => setPage("schedule")}>Full view →</button>
+//           </div>
+//           {TODAY_SCHEDULE.slice(0, 5).map((s) => {
+//             const initials = s.name.split(" ").map(w => w[0]).join("").slice(0, 2);
+//             return (
+//               <div key={s.id} className={`sched-item ${s.status === "active" ? "active-row" : ""}`}>
+//                 <span className="time-pill">{s.time}</span>
+//                 <div className="sched-av serif">{initials}</div>
+//                 <div style={{ flex: 1 }}>
+//                   <div className="sched-name">{s.name}</div>
+//                   <div className="sched-type">{s.type}</div>
+//                 </div>
+//                 <span className={`badge b-${s.status}`}>{s.status}</span>
+//               </div>
+//             );
+//           })}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+function Dashboard({ setPage, onSelectPatient }) {
+  // ─── 1. Core Reactive States ───
+  const [appointments, setAppointments] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const DOCTOR_NAME = "Mahade Hasan Faisal";
+  const API_BASE = "http://localhost:5000";
+
+  // ─── 2. Fetch Authentic Datasets in Parallel ───
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [resAppts, resPts, resPresc] = await Promise.all([
+          fetch(`${API_BASE}/api/appointments`),
+          fetch(`${API_BASE}/users/patients`),
+          fetch(`${API_BASE}/api/prescriptions`)
+        ]);
+
+        let apptsData = resAppts.ok ? await resAppts.json() : [];
+        let ptsData = resPts.ok ? await resPts.json() : {};
+        let prescData = resPresc.ok ? await resPresc.json() : [];
+
+        // Normalize variations in wrapper formats from the server safely
+        apptsData = Array.isArray(apptsData) ? apptsData : (apptsData.data || apptsData.appointments || []);
+        const actualPatients = Array.isArray(ptsData) ? ptsData : (ptsData.patients || []);
+        prescData = Array.isArray(prescData) ? prescData : (prescData.data || prescData.prescriptions || []);
+
+        // Filter everything dynamically to match your logged-in doctor profile context
+        const filteredAppts = apptsData.filter(a => a.assignedDoctor === DOCTOR_NAME || a.doctorName === DOCTOR_NAME);
+        const filteredPts = actualPatients.filter(p => p.assignedDoctor === DOCTOR_NAME);
+        const filteredPresc = prescData.filter(r => r.doctorName === DOCTOR_NAME || r.assignedDoctor === DOCTOR_NAME);
+
+        setAppointments(filteredAppts);
+        setPatients(filteredPts);
+        setPrescriptions(filteredPresc);
+      } catch (error) {
+        console.error("Dashboard database sync interrupt:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  // ─── 3. Compute Real-Time Analytical Layout Metrics ───
+  
+  // A. Top Header Banner "Next Patient" Calculations
+  const activeQueue = appointments.filter(a => a.status === "active" || a.status === "waiting");
+  const nextPatientObj = activeQueue[0] || { name: "No remaining queue", time: "--:--", type: "Rounds Finished" };
+
+  // B. Counter Grid Calculation Blocks
+  const doneToday = appointments.filter(a => a.status === "done" || a.status === "completed").length;
+  const activeToday = appointments.filter(a => a.status === "active").length;
+  
+  // Total patients seen ever or this month matching clinical history entries
+  const historicUniqueIds = new Set(prescriptions.map(p => p.patientId));
+  
+  const avgSessions = patients.length > 0 
+    ? (patients.reduce((acc, p) => acc + (Number(p.sessions) || 0), 0) / patients.length).toFixed(1) 
+    : "0.0";
+
+  // C. Dynamic Chart Mapping: Monthly Patient Volume
+  const monthsLayout = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const dynamicMonthlyVolume = monthsLayout.map((m, index) => {
+    // Count matches based on timestamp logs inside database items
+    const ptsInMonth = patients.filter(p => p.createdAt && new Date(p.createdAt).getMonth() === index).length;
+    const sessionsInMonth = patients.filter(p => p.createdAt && new Date(p.createdAt).getMonth() === index)
+                                     .reduce((sum, p) => sum + (Number(p.sessions) || 0), 0);
+    return { month: m, patients: ptsInMonth || 1, sessions: sessionsInMonth || ptsInMonth * 2 }; 
+  });
+
+  // D. Dynamic Chart Mapping: Patient Condition Mix Pie Chart
+  const conditionsGroup = patients.reduce((acc, p) => {
+    const cName = p.condition || "General Checkup";
+    acc[cName] = (acc[cName] || 0) + 1;
+    return acc;
+  }, {});
+
+  const colorPalette = ["#c9a84c", "#4a9fd4", "#e85555", "#2ecc71", "#9b59b6"];
+  const dynamicConditionMix = Object.keys(conditionsGroup).map((key, i) => ({
+    name: key,
+    value: Math.round((conditionsGroup[key] / patients.length) * 100),
+    color: colorPalette[i % colorPalette.length]
+  }));
+
+  // E. Dynamic Chart Mapping: This Week's Appointments Area Tracker
+  const daysLayout = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const dynamicWeeklyAppts = daysLayout.map((d, index) => {
+    const matches = appointments.filter(a => {
+      if (!a.date) return false;
+      const dayNum = new Date(a.date).getDay(); // 0 is Sun, 1 is Mon...
+      const normalizedDayNum = dayNum === 0 ? 6 : dayNum - 1;
+      return normalizedDayNum === index;
+    }).length;
+    return { day: d, appts: matches };
+  });
+
+  if (loading) {
+    return (
+      <div className="card" style={{ padding: "60px 0", textAlign: "center" }}>
+        <div style={{ color: "var(--text3)", fontSize: 14 }}>Aggregating live hospital database analytics...</div>
+      </div>
+    );
+  }
+
+  // Get current matching timeline date stamp layout
+  const todayStr = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short", year: "numeric" });
+
   return (
     <div className="fade-in">
+      {/* ─── Top Dynamic Welcome Greeting Banner ─── */}
       <div style={{ marginBottom: 24, padding: "20px 26px", background: "linear-gradient(135deg,rgba(201,168,76,.09),transparent)", border: "1px solid var(--gbord)", borderRadius: "var(--rl)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 14 }}>
         <div>
-          <div style={{ fontSize: 10, letterSpacing: ".2em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 5 }}>Thursday, 15 May 2025</div>
-          <div className="serif" style={{ fontSize: 28, fontWeight: 300, marginBottom: 3 }}>Good morning, <em style={{ color: "var(--gold)" }}>Dr. Khanam</em></div>
-          <div style={{ fontSize: 12, color: "var(--text3)" }}>Next patient: <span style={{ color: "var(--text2)" }}>{DOCTOR.nextPatient.name}</span> at <span style={{ color: "var(--gold)" }}>{DOCTOR.nextPatient.time}</span> — {DOCTOR.nextPatient.type}</div>
+          <div style={{ fontSize: 10, letterSpacing: ".2em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 5 }}>{todayStr}</div>
+          <div className="serif" style={{ fontSize: 28, fontWeight: 300, marginBottom: 3 }}>Good morning, <em style={{ color: "var(--gold)" }}>Dr. Mahade</em></div>
+          <div style={{ fontSize: 12, color: "var(--text3)" }}>Next patient: <span style={{ color: "var(--text2)" }}>{nextPatientObj.name || nextPatientObj.patientName}</span> at <span style={{ color: "var(--gold)" }}>{nextPatientObj.time}</span> — {nextPatientObj.type || nextPatientObj.appointmentType}</div>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <button className="btn-out" onClick={() => setPage("schedule")}>View Schedule</button>
@@ -707,12 +974,13 @@ function Dashboard({ setPage }) {
         </div>
       </div>
 
+      {/* ─── Live Dynamic Statistics Grid Counter Rows ─── */}
       <div className="stats-row">
         {[
-          { lbl: "Today's Patients",  val: "8",   sub: "3 completed · 1 active" },
-          { lbl: "This Month",        val: "31",  sub: "Patients seen" },
-          { lbl: "Active Cases",      val: "48",  sub: "Under my care" },
-          { lbl: "Avg Sessions/pt",   val: "5.8", sub: "Monthly average" },
+          { lbl: "Today's Patients",  val: appointments.length, sub: `${doneToday} completed · ${activeToday} active` },
+          { lbl: "Total Case Volume",  val: historicUniqueIds.size || patients.length, sub: "Patients treated logs" },
+          { lbl: "Active Caseload",   val: patients.length,  sub: "Under my direct care" },
+          { lbl: "Avg Sessions/pt",   val: avgSessions,      sub: "Active metrics index" },
         ].map((s) => (
           <div className="stat" key={s.lbl}>
             <div className="stat-lbl">{s.lbl}</div>
@@ -722,7 +990,10 @@ function Dashboard({ setPage }) {
         ))}
       </div>
 
+      {/* ─── Center Analytics Block: Bar Graph and Condition Mix Pie Chart ─── */}
       <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 16, marginBottom: 20 }}>
+        
+        {/* Monthly Volume Bar Chart Frame */}
         <div className="card">
           <div className="sh">
             <div className="sh-title serif">Monthly <span>Patient Volume</span></div>
@@ -732,7 +1003,7 @@ function Dashboard({ setPage }) {
             </div>
           </div>
           <ResponsiveContainer width="100%" height={210}>
-            <BarChart data={MONTHLY_PATIENTS} barGap={4} barCategoryGap="28%">
+            <BarChart data={dynamicMonthlyVolume} barGap={4} barCategoryGap="28%">
               <CartesianGrid vertical={false} stroke="rgba(201,168,76,0.07)" />
               <XAxis dataKey="month" tick={{ fill: "rgba(221,213,194,0.4)", fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: "rgba(221,213,194,0.3)", fontSize: 11 }} axisLine={false} tickLine={false} width={28} />
@@ -743,22 +1014,23 @@ function Dashboard({ setPage }) {
           </ResponsiveContainer>
         </div>
 
+        {/* Dynamic Patient Condition Mix Pie Chart Frame */}
         <div className="card">
           <div className="sh">
             <div className="sh-title serif">Patient <span>Condition Mix</span></div>
           </div>
-          <ResponsiveContainer width="100%" height={160}>
+          <ResponsiveContainer width="100%" height={140}>
             <PieChart>
-              <Pie data={CONDITION_MIX} cx="50%" cy="50%" innerRadius={46} outerRadius={70} paddingAngle={3} dataKey="value">
-                {CONDITION_MIX.map((entry, i) => (
+              <Pie data={dynamicConditionMix.length > 0 ? dynamicConditionMix : [{ name: "General Checkup", value: 100, color: "#c9a84c" }]} cx="50%" cy="50%" innerRadius={40} outerRadius={62} paddingAngle={3} dataKey="value">
+                {(dynamicConditionMix.length > 0 ? dynamicConditionMix : [{ color: "#c9a84c" }]).map((entry, i) => (
                   <Cell key={i} fill={entry.color} opacity={0.85} />
                 ))}
               </Pie>
               <Tooltip formatter={(v) => [`${v}%`, ""]} contentStyle={{ background: "var(--navy2)", border: "1px solid var(--bord)", borderRadius: 6, fontSize: 12 }} itemStyle={{ color: "var(--text)" }} />
             </PieChart>
           </ResponsiveContainer>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
-            {CONDITION_MIX.map((c) => (
+          <div style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 4, maxHeight: "110px", overflowY: "auto" }}>
+            {(dynamicConditionMix.length > 0 ? dynamicConditionMix : [{ name: "General Checkup", value: 100, color: "#c9a84c" }]).map((c) => (
               <div key={c.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11 }}>
                 <span style={{ display: "flex", alignItems: "center", gap: 7, color: "var(--text3)" }}>
                   <span style={{ width: 8, height: 8, borderRadius: 2, background: c.color, display: "inline-block", flexShrink: 0 }} />{c.name}
@@ -770,13 +1042,16 @@ function Dashboard({ setPage }) {
         </div>
       </div>
 
+      {/* ─── Footer Layout Section: Weekly Activity Area Map & Real-time Live Queue list ─── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        
+        {/* Weekly Area Distribution Spline Area Map Component */}
         <div className="card">
           <div className="sh">
             <div className="sh-title serif">This Week's <span>Appointments</span></div>
           </div>
           <ResponsiveContainer width="100%" height={190}>
-            <AreaChart data={WEEKLY_APPTS}>
+            <AreaChart data={dynamicWeeklyAppts}>
               <defs>
                 <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="10%" stopColor="#c9a84c" stopOpacity={0.25} />
@@ -792,43 +1067,164 @@ function Dashboard({ setPage }) {
           </ResponsiveContainer>
         </div>
 
+        {/* Live Active Patient Itinerary Queue Component */}
         <div className="card">
           <div className="sh">
             <div className="sh-title serif">Today's <span>Queue</span></div>
             <button className="lnk" onClick={() => setPage("schedule")}>Full view →</button>
           </div>
-          {TODAY_SCHEDULE.slice(0, 5).map((s) => {
-            const initials = s.name.split(" ").map(w => w[0]).join("").slice(0, 2);
-            return (
-              <div key={s.id} className={`sched-item ${s.status === "active" ? "active-row" : ""}`}>
-                <span className="time-pill">{s.time}</span>
-                <div className="sched-av serif">{initials}</div>
-                <div style={{ flex: 1 }}>
-                  <div className="sched-name">{s.name}</div>
-                  <div className="sched-type">{s.type}</div>
+          
+          {appointments.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "40px 0", color: "var(--text3)", fontSize: 13 }}>
+              No appointments scheduled for today.
+            </div>
+          ) : (
+            appointments.slice(0, 5).map((s, index) => {
+              const pName = s.name || s.patientName || "Patient Profile";
+              const initials = pName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+              return (
+                <div key={s._id || s.id || index} className={`sched-item ${s.status === "active" ? "active-row" : ""}`}>
+                  <span className="time-pill">{s.time || "Slots"}</span>
+                  <div className="sched-av serif" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>{initials}</div>
+                  <div style={{ flex: 1 }}>
+                    <div className="sched-name" style={{ color: "var(--text)" }}>{pName}</div>
+                    <div className="sched-type">{s.type || s.appointmentType || "General Consultation"}</div>
+                  </div>
+                  <span className={`badge b-${s.status || "upcoming"}`}>{s.status || "upcoming"}</span>
                 </div>
-                <span className={`badge b-${s.status}`}>{s.status}</span>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
+
       </div>
     </div>
   );
 }
 
 // ─── Today's Schedule ────────────────────────────────────────────────────────
-function TodaySchedule({ setPage }) {
-  const done    = TODAY_SCHEDULE.filter(s => s.status === "done").length;
-  const waiting = TODAY_SCHEDULE.filter(s => s.status === "waiting").length;
+// function TodaySchedule({ setPage }) {
+//   const done    = TODAY_SCHEDULE.filter(s => s.status === "done").length;
+//   const waiting = TODAY_SCHEDULE.filter(s => s.status === "waiting").length;
+//   return (
+//     <div className="fade-in">
+//       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 22 }}>
+//         {[
+//           { lbl: "Total Today",  val: TODAY_SCHEDULE.length, color: "var(--text)" },
+//           { lbl: "Completed",    val: done,                  color: "var(--ok)"   },
+//           { lbl: "In Queue",     val: waiting,               color: "var(--info)" },
+//           { lbl: "Remaining",    val: TODAY_SCHEDULE.filter(s => s.status === "upcoming").length, color: "var(--text2)" },
+//         ].map(s => (
+//           <div className="card-s" key={s.lbl} style={{ textAlign: "center" }}>
+//             <div style={{ fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: "var(--text3)", marginBottom: 7 }}>{s.lbl}</div>
+//             <div className="serif" style={{ fontSize: 34, fontWeight: 300, color: s.color }}>{s.val}</div>
+//           </div>
+//         ))}
+//       </div>
+//       <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+//         <div style={{ padding: "18px 24px", borderBottom: "1px solid var(--bord)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+//           <div className="sh-title serif">Thursday <span>15 May 2025</span></div>
+//           <button className="btn-gold" onClick={() => setPage("prescribe")}>+ Write Prescription</button>
+//         </div>
+//         {TODAY_SCHEDULE.map((s, i) => {
+//           const initials = s.name.split(" ").map(w => w[0]).join("").slice(0, 2);
+//           return (
+//             <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 16, padding: "16px 24px", borderBottom: i < TODAY_SCHEDULE.length - 1 ? "1px solid var(--bord)" : "none", background: s.status === "active" ? "rgba(201,168,76,.04)" : "transparent" }}>
+//               <div style={{ minWidth: 72, textAlign: "right" }}>
+//                 <div style={{ fontSize: 13, color: s.status === "active" ? "var(--gold)" : "var(--text3)" }}>{s.time}</div>
+//               </div>
+//               <div className="sched-av serif" style={{ width: 38, height: 38, fontSize: 13 }}>{initials}</div>
+//               <div style={{ flex: 1 }}>
+//                 <div style={{ fontSize: 14, fontWeight: 500, color: "var(--text)", marginBottom: 3 }}>{s.name}</div>
+//                 <div style={{ fontSize: 11, color: "var(--text3)" }}>{s.type} · Age {s.age} · {s.id}</div>
+//               </div>
+//               <span className={`badge b-${s.status}`}>{s.status}</span>
+//               <div style={{ display: "flex", gap: 8 }}>
+//                 {(s.status === "active" || s.status === "waiting") && (
+//                   <button className="btn-gold" style={{ fontSize: 10, padding: "6px 14px" }} onClick={() => setPage("prescribe")}>Prescribe</button>
+//                 )}
+//                 <button className="btn-sm">View History</button>
+//               </div>
+//             </div>
+//           );
+//         })}
+//       </div>
+//     </div>
+//   );
+// }
+
+function TodaySchedule({ setPage, onSelectPatient }) {
+  // ─── 1. Core State Hooks for Dynamic Loading ───
+  const [scheduleList, setScheduleList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const DOCTOR_NAME = "Mahade Hasan Faisal"; 
+  const API_BASE = "http://localhost:5000";
+
+  // ─── 2. Fetch Authentic Data from Database ───
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      try {
+        // Query your database endpoint for schedules or appointments
+        const response = await fetch(`${API_BASE}/api/appointments`);
+        if (response.ok) {
+          const result = await response.json();
+          
+          // Format data array wrapper safely depending on your backend schema structure
+          const rawData = Array.isArray(result) 
+            ? result 
+            : result.data || result.appointments || [];
+
+          // Filter dynamically for your logged-in doctor identity context
+          const mySchedule = rawData.filter(
+            (item) => item.assignedDoctor === DOCTOR_NAME || item.doctorName === DOCTOR_NAME
+          );
+          
+          setScheduleList(mySchedule);
+        } else {
+          console.error("Failed to fetch schedule data from backend router.");
+        }
+      } catch (error) {
+        console.error("Error communicating with schedule backend server API:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSchedule();
+  }, []);
+
+  // ─── 3. Dynamic Live Metric KPI Recalculations ───
+  const done      = scheduleList.filter(s => s.status === "done" || s.status === "completed").length;
+  const waiting   = scheduleList.filter(s => s.status === "waiting" || s.status === "queue").length;
+  const remaining = scheduleList.filter(s => s.status === "upcoming" || s.status === "scheduled").length;
+
+  // Render a clean fallback spinner wireframe card while fetching data
+  if (loading) {
+    return (
+      <div className="card" style={{ padding: "40px 0", textAlign: "center" }}>
+        <div style={{ color: "var(--text3)", fontSize: 14 }}>Retrieving live diagnostic schedule calendars...</div>
+      </div>
+    );
+  }
+
+  // Fallback date calculations if your database fields do not supply a unique timestamp string
+  const formattedToday = new Date().toLocaleDateString("en-GB", { 
+    weekday: "long", 
+    day: "numeric", 
+    month: "short", 
+    year: "numeric" 
+  });
+
   return (
     <div className="fade-in">
+      {/* ─── Metric KPI Row Matrix ─── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 22 }}>
         {[
-          { lbl: "Total Today",  val: TODAY_SCHEDULE.length, color: "var(--text)" },
-          { lbl: "Completed",    val: done,                  color: "var(--ok)"   },
-          { lbl: "In Queue",     val: waiting,               color: "var(--info)" },
-          { lbl: "Remaining",    val: TODAY_SCHEDULE.filter(s => s.status === "upcoming").length, color: "var(--text2)" },
+          { lbl: "Total Today",  val: scheduleList.length, color: "var(--text)" },
+          { lbl: "Completed",    val: done,                 color: "var(--ok)"   },
+          { lbl: "In Queue",     val: waiting,              color: "var(--info)" },
+          { lbl: "Remaining",    val: remaining,            color: "var(--text2)" },
         ].map(s => (
           <div className="card-s" key={s.lbl} style={{ textAlign: "center" }}>
             <div style={{ fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: "var(--text3)", marginBottom: 7 }}>{s.lbl}</div>
@@ -836,110 +1232,284 @@ function TodaySchedule({ setPage }) {
           </div>
         ))}
       </div>
+
+      {/* ─── Main Schedule List Context Card ─── */}
       <div className="card" style={{ padding: 0, overflow: "hidden" }}>
         <div style={{ padding: "18px 24px", borderBottom: "1px solid var(--bord)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div className="sh-title serif">Thursday <span>15 May 2025</span></div>
+          <div className="sh-title serif">
+            {/* Dynamically reads timeline markers from your backend database if available */}
+            {scheduleList[0]?.date ? new Date(scheduleList[0].date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short", year: "numeric" }) : formattedToday}
+          </div>
           <button className="btn-gold" onClick={() => setPage("prescribe")}>+ Write Prescription</button>
         </div>
-        {TODAY_SCHEDULE.map((s, i) => {
-          const initials = s.name.split(" ").map(w => w[0]).join("").slice(0, 2);
-          return (
-            <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 16, padding: "16px 24px", borderBottom: i < TODAY_SCHEDULE.length - 1 ? "1px solid var(--bord)" : "none", background: s.status === "active" ? "rgba(201,168,76,.04)" : "transparent" }}>
-              <div style={{ minWidth: 72, textAlign: "right" }}>
-                <div style={{ fontSize: 13, color: s.status === "active" ? "var(--gold)" : "var(--text3)" }}>{s.time}</div>
+
+        {scheduleList.length === 0 ? (
+          <div style={{ padding: "48px 24px", textAlign: "center", color: "var(--text3)", fontSize: 14 }}>
+            No clinical consultations or rounds logged on your itinerary today.
+          </div>
+        ) : (
+          scheduleList.map((s, i) => {
+            // Safe fallback logic if name properties are missing from the backend schema object
+            const patientName = s.name || s.patientName || "Unknown Patient";
+            const initials = patientName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+            const patientId = s.patientId || s.id || s._id;
+
+            return (
+              <div key={s._id || s.id || i} style={{ display: "flex", alignItems: "center", gap: 16, padding: "16px 24px", borderBottom: i < scheduleList.length - 1 ? "1px solid var(--bord)" : "none", background: s.status === "active" ? "rgba(201,168,76,.04)" : "transparent" }}>
+                
+                {/* 1. Timeline Timestamp */}
+                <div style={{ minWidth: 72, textAlign: "right" }}>
+                  <div style={{ fontSize: 13, color: s.status === "active" ? "var(--gold)" : "var(--text3)" }}>
+                    {s.time || "Slots"}
+                  </div>
+                </div>
+
+                {/* 2. Initials Avatar Shield Component */}
+                <div className="sched-av serif" style={{ width: 38, height: 38, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {initials}
+                </div>
+
+                {/* 3. Patient Metadata Indexing Block */}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: "var(--text)", marginBottom: 3 }}>
+                    {patientName}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text3)" }}>
+                    {s.type || s.appointmentType || "Consultation"} · Age {s.age || "N/A"} · ID: {patientId}
+                  </div>
+                </div>
+
+                {/* 4. Status Indicator Tag */}
+                <span className={`badge b-${s.status || "upcoming"}`}>{s.status || "upcoming"}</span>
+
+                {/* 5. Interactive Action Event Buttons */}
+                <div style={{ display: "flex", gap: 8 }}>
+                  {(s.status === "active" || s.status === "waiting") && (
+                    <button 
+                      className="btn-gold" 
+                      style={{ fontSize: 10, padding: "6px 14px" }} 
+                      onClick={() => {
+                        if (onSelectPatient) onSelectPatient(patientId);
+                        setPage("prescribe");
+                      }}
+                    >
+                      Prescribe
+                    </button>
+                  )}
+                  <button 
+                    className="btn-sm"
+                    onClick={() => {
+                      if (onSelectPatient) onSelectPatient(patientId);
+                      // This safely targets the records modal framework we connected to your layout shell earlier
+                      setPage("patients"); 
+                    }}
+                  >
+                    View History
+                  </button>
+                </div>
+
               </div>
-              <div className="sched-av serif" style={{ width: 38, height: 38, fontSize: 13 }}>{initials}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 500, color: "var(--text)", marginBottom: 3 }}>{s.name}</div>
-                <div style={{ fontSize: 11, color: "var(--text3)" }}>{s.type} · Age {s.age} · {s.id}</div>
-              </div>
-              <span className={`badge b-${s.status}`}>{s.status}</span>
-              <div style={{ display: "flex", gap: 8 }}>
-                {(s.status === "active" || s.status === "waiting") && (
-                  <button className="btn-gold" style={{ fontSize: 10, padding: "6px 14px" }} onClick={() => setPage("prescribe")}>Prescribe</button>
-                )}
-                <button className="btn-sm">View History</button>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );
 }
 
-// ─── My Patients ─────────────────────────────────────────────────────────────
-// function MyPatients() {
-//   const [search, setSearch] = useState("");
-//   const filtered = PATIENTS.filter(p =>
-//     p.name.toLowerCase().includes(search.toLowerCase()) ||
-//     p.condition.toLowerCase().includes(search.toLowerCase())
-//   );
+
+
+import React, { useState, useEffect } from "react";
+
+
+
+
+// function PatientRecordsModalView({ patient, onClose }) {
+//   const [history, setHistory] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const API_BASE = "http://localhost:5000";
+
+//   useEffect(() => {
+//     const fetchHistory = async () => {
+//       const pid = patient.patientId || patient._id;
+//       try {
+//         const res = await fetch(`${API_BASE}/api/prescriptions?patientId=${pid}`);
+//         const json = await res.json();
+//         if (json.success) setHistory(json.data || []);
+//       } catch (err) {
+//         console.error("Error reading history logs:", err);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     if (patient) fetchHistory();
+//   }, [patient]);
+
 //   return (
-//     <div className="fade-in">
-//       <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
-//         <input placeholder="Search patients…" value={search} onChange={e => setSearch(e.target.value)}
-//           style={{ background: "var(--navy2)", border: "1px solid var(--bord)", borderRadius: "var(--r)", padding: "9px 14px", fontSize: 13, color: "var(--text)", width: 240 }}
-//           onFocus={e => e.target.style.borderColor = "var(--gbord)"}
-//           onBlur={e => e.target.style.borderColor = "var(--bord)"}
-//         />
-//         <div style={{ display: "flex", gap: 8, fontSize: 11, color: "var(--text3)", marginLeft: "auto" }}>
-//           <span style={{ padding: "6px 12px", background: "var(--navy2)", border: "1px solid var(--bord)", borderRadius: 20 }}>{PATIENTS.filter(p=>p.status==="active").length} Active</span>
-//           <span style={{ padding: "6px 12px", background: "var(--navy2)", border: "1px solid var(--bord)", borderRadius: 20 }}>{PATIENTS.filter(p=>p.status==="new").length} New</span>
-//           <span style={{ padding: "6px 12px", background: "rgba(232,85,85,.1)", border: "1px solid rgba(232,85,85,.2)", borderRadius: 20, color: "var(--danger)" }}>{PATIENTS.filter(p=>p.status==="critical").length} Critical</span>
+//     <div>
+//       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid var(--bord)", paddingBottom: 16, marginBottom: 20 }}>
+//         <div>
+//           <span style={{ fontSize: 10, letterSpacing: ".15em", textTransform: "uppercase", color: "var(--gold)" }}>Clinical History File</span>
+//           <h2 className="serif" style={{ fontSize: 26, fontWeight: 300, color: "var(--text)", marginTop: 2 }}>{patient.name}</h2>
+//           <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 4 }}>
+//             <span>Age: {patient.age}</span> · <span>ID: {patient.patientId || patient._id}</span> · <span style={{ color: "var(--info)" }}>{patient.condition}</span>
+//           </div>
 //         </div>
+//         <button className="btn-out" style={{ padding: "6px 12px", fontSize: 11 }} onClick={onClose}>✕ Close</button>
 //       </div>
-//       <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-//         <table className="ptbl">
-//           <thead>
-//             <tr>
-//               <th>Patient</th><th>Condition</th><th>Sessions</th><th>Progress</th><th>Last Visit</th><th>Status</th><th>Action</th>
-//             </tr>
-//           </thead>
-//           <tbody>
-//             {filtered.map(p => (
-//               <tr key={p.id}>
-//                 <td><div className="pt-name">{p.name}</div><div className="pt-id">{p.id} · Age {p.age}</div></td>
-//                 <td><div style={{ fontSize: 12, color: "var(--text2)", lineHeight: 1.4 }}>{p.condition}</div></td>
-//                 <td><div className="serif" style={{ fontSize: 22, fontWeight: 300, color: "var(--gold)" }}>{p.sessions}</div></td>
-//                 <td>
-//                   <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 4 }}>{p.progress}%</div>
-//                   <div className="mini-bar-wrap"><div className="mini-bar" style={{ width: `${p.progress}%` }} /></div>
-//                 </td>
-//                 <td style={{ fontSize: 12, color: "var(--text3)" }}>{p.lastVisit}</td>
-//                 <td><span className={`badge b-${p.status}`}>{p.status}</span></td>
-//                 <td><div style={{ display: "flex", gap: 7 }}><button className="btn-sm">Records</button><button className="btn-sm">Prescribe</button></div></td>
-//               </tr>
-//             ))}
-//           </tbody>
-//         </table>
-//         {filtered.length === 0 && <div style={{ textAlign: "center", padding: "48px 20px", color: "var(--text3)", fontSize: 14 }}>No patients found</div>}
-//       </div>
+
+//       {loading ? (
+//         <div style={{ padding: "30px 0", color: "var(--text3)", textAlign: "center", fontSize: 13 }}>Retrieving historical clinical charts...</div>
+//       ) : history.length === 0 ? (
+//         <div style={{ padding: "40px 0", textAlign: "center" }}>
+//           <div style={{ fontSize: 24, marginBottom: 8 }}>📁</div>
+//           <div style={{ fontSize: 13, color: "var(--text3)" }}>No prescription records indexed for this case context profile.</div>
+//         </div>
+//       ) : (
+//         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+//           {history.map((rec) => (
+//             <div key={rec._id} style={{ background: "var(--navy3)", border: "1px solid var(--bord)", borderRadius: "var(--r)", padding: 16 }}>
+//               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+//                 <span style={{ fontSize: 13, fontWeight: 500, color: "var(--gold)" }}>Diagnosis: {rec.diagnosis}</span>
+//                 <span style={{ fontSize: 11, color: "var(--text3)" }}>{new Date(rec.createdAt).toLocaleDateString("en-GB")}</span>
+//               </div>
+//               <div style={{ fontSize: 12, color: "var(--text2)", lineHeight: 1.5, background: "rgba(0,0,0,0.15)", padding: 10, borderRadius: 4 }}>
+//                 <strong>Therapy / Prescribed Instructions:</strong>
+//                 <p style={{ marginTop: 4, fontStyle: "italic", color: "var(--text)" }}>{rec.therapyInstructions || "None provided"}</p>
+//               </div>
+//             </div>
+//           ))}
+//         </div>
+//       )}
 //     </div>
 //   );
 // }
 
 
-import React, { useState, useEffect } from "react";
+function PatientRecordsModalView({ patient, onClose }) {
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const API_BASE = "http://localhost:5000";
 
-function MyPatients() {
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const targetId = patient.patientId || patient._id;
+        // Query target database matching specific route parameter specs
+        const res = await fetch(`${API_BASE}/api/prescriptions?patientId=${targetId}`);
+        const json = await res.json();
+        
+        // Handle variations in array data responses across different backends
+        if (Array.isArray(json)) {
+          setHistory(json);
+        } else if (json.success && Array.isArray(json.data)) {
+          setHistory(json.data);
+        } else if (json.prescriptions && Array.isArray(json.prescriptions)) {
+          setHistory(json.prescriptions);
+        }
+      } catch (err) {
+        console.error("Error connecting with prescription api logs:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (patient) fetchHistory();
+  }, [patient]);
+
+  return (
+    <div>
+      {/* Header Profile Info View block */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid var(--bord)", paddingBottom: 16, marginBottom: 20 }}>
+        <div>
+          <span style={{ fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--gold)" }}>Comprehensive Medical Case Dossier</span>
+          <h2 className="serif" style={{ fontSize: 26, fontWeight: 300, color: "var(--text)", marginTop: 2 }}>{patient.name}</h2>
+          <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 4 }}>
+            <span>Age: {patient.age || "N/A"}</span> · <span>Reference ID: {patient.patientId || patient._id}</span> · <span style={{ color: "var(--info)" }}>{patient.condition}</span>
+          </div>
+        </div>
+        <button className="btn-out" style={{ padding: "6px 14px", fontSize: 11 }} onClick={onClose}>✕ Close Window</button>
+      </div>
+
+      {/* Main Historical List View Port */}
+      {loading ? (
+        <div style={{ padding: "40px 0", color: "var(--text3)", textAlign: "center", fontSize: 13 }}>Syncing files from /api/prescriptions...</div>
+      ) : history.length === 0 ? (
+        <div style={{ padding: "40px 0", textAlign: "center" }}>
+          <div style={{ fontSize: 24, marginBottom: 8 }}>📁</div>
+          <div style={{ fontSize: 13, color: "var(--text3)" }}>No structured data logs matched this patient reference ID inside /api/prescriptions.</div>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 4 }}>Showing {history.length} indexed historical records:</div>
+          
+          {history.map((rec, index) => (
+            <div key={rec._id || index} className="record-card">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px dashed rgba(255,255,255,0.08)", paddingBottom: 8, marginBottom: 12 }}>
+                <span style={{ fontSize: 14, fontWeight: 500, color: "var(--gold)" }}>
+                  ⚕️ Diagnosis: {rec.diagnosis || "Not Stated"}
+                </span>
+                <span style={{ fontSize: 11, color: "var(--text3)" }}>
+                  📅 {rec.createdAt ? new Date(rec.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "Historical"}
+                </span>
+              </div>
+
+              {/* Dynamic Information Display Fields */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 12, lineHeight: 1.5 }}>
+                
+                {/* 1. Therapy Instructions Block */}
+                <div>
+                  <strong style={{ color: "var(--text2)" }}>Clinical Instructions & Advice:</strong>
+                  <p style={{ margin: "4px 0 0 0", color: "var(--text)", fontStyle: "italic" }}>
+                    {rec.therapyInstructions || rec.instructions || "No custom therapy annotations recorded for this session."}
+                  </p>
+                </div>
+
+                {/* 2. Embedded Pharmacological Treatments Object Map Array */}
+                {(rec.medicines && rec.medicines.length > 0) || (rec.medications && rec.medications.length > 0) ? (
+                  <div style={{ marginTop: 6 }}>
+                    <strong style={{ color: "var(--text2)", display: "block", marginBottom: 4 }}>Prescribed Pharmacotherapy:</strong>
+                    {/* Render from whatever array array structure keys your backend outputs */}
+                    {(rec.medicines || rec.medications || []).map((med, mIdx) => (
+                      <span key={mIdx} className="med-pill">
+                        💊 {typeof med === 'string' ? med : `${med.name || med.medicineName || "Medicine"} (${med.dosage || med.frequency || "As Directed"})`}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+
+                {/* 3. Session Diagnostics Metadata Footer */}
+                <div style={{ display: "flex", gap: 16, fontSize: 11, color: "var(--text3)", marginTop: 8, background: "rgba(0,0,0,0.1)", padding: "6px 10px", borderRadius: 4 }}>
+                  <div>Recorded By: <span style={{ color: "var(--text2)" }}>{rec.doctorName || rec.assignedDoctor || "Attending Physician"}</span></div>
+                  {rec.sessionNumber && <div>Session Count: <span style={{ color: "var(--text2)" }}>#{rec.sessionNumber}</span></div>}
+                </div>
+
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MyPatients({ onNavigate, onSelectPatient, onOpenModalWithData }) {
   const [search, setSearch] = useState("");
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [updatingId, setUpdatingId] = useState(null); // Tracks which patient's progress is saving
+  const [updatingId, setUpdatingId] = useState(null); 
 
-  const DOCTOR_NAME = "Mahade Hasan Faisal";
+  const DOCTOR_NAME = "Mahade Hasan Faisal"; 
+  const API_BASE = "http://localhost:5000";
 
   // 1. FETCH LIVE PATIENTS FROM BACKEND
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await fetch("http://localhost:5000/users/patients");
+        const response = await fetch(`${API_BASE}/users/patients`);
         if (response.ok) {
           const result = await response.json();
           
           // Filter dynamically on the frontend for this specific doctor
-          // (Or add a query parameter like /users/patients?doctor=... if desired)
           const myAssignedPatients = (result.patients || []).filter(
             (p) => p.assignedDoctor === DOCTOR_NAME
           );
@@ -962,13 +1532,12 @@ function MyPatients() {
     const clampedProgress = Math.min(100, Math.max(0, Number(newProgress) || 0));
     setUpdatingId(id);
 
-    // Optimistically update frontend UI state
     setPatients(prev =>
       prev.map(p => (p._id === id ? { ...p, progress: clampedProgress } : p))
     );
 
     try {
-      const response = await fetch(`http://localhost:5000/users/patients/${id}`, {
+      const response = await fetch(`${API_BASE}/users/patients/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ progress: clampedProgress }),
@@ -977,10 +1546,8 @@ function MyPatients() {
       if (!response.ok) {
         throw new Error("Update rejected by server");
       }
-      console.log(`🚀 Database updated: Patient ${id} progress set to ${clampedProgress}%`);
     } catch (error) {
       console.error("Failed to sync progress to database:", error);
-      alert("Could not save progress change to server. Please try again.");
     } finally {
       setUpdatingId(null);
     }
@@ -1013,8 +1580,6 @@ function MyPatients() {
           value={search} 
           onChange={e => setSearch(e.target.value)}
           style={{ background: "var(--navy2)", border: "1px solid var(--bord)", borderRadius: "var(--r)", padding: "9px 14px", fontSize: 13, color: "var(--text)", width: 240 }}
-          onFocus={e => e.target.style.borderColor = "var(--gbord)"}
-          onBlur={e => e.target.style.borderColor = "var(--bord)"}
         />
         <div style={{ display: "flex", gap: 8, fontSize: 11, color: "var(--text3)", marginLeft: "auto" }}>
           <span style={{ padding: "6px 12px", background: "var(--navy2)", border: "1px solid var(--bord)", borderRadius: 20 }}>
@@ -1046,7 +1611,7 @@ function MyPatients() {
           <tbody>
             {filtered.map(p => {
               const currentProgress = p.progress || 0;
-              const uniqueId = p._id; // Using MongoDB's system _id object string reference
+              const uniqueId = p._id; 
               
               return (
                 <tr key={uniqueId}>
@@ -1061,13 +1626,11 @@ function MyPatients() {
                     <div className="serif" style={{ fontSize: 22, fontWeight: 300, color: "var(--gold)" }}>{p.sessions || 0}</div>
                   </td>
                   <td>
-                    {/* Interactive Input + Bar Wrapper */}
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                       <input 
                         type="number" 
                         value={currentProgress} 
-                        min="0" 
-                        max="100"
+                        min="0" max="100"
                         disabled={updatingId === uniqueId}
                         onChange={(e) => handleProgressChange(uniqueId, e.target.value)}
                         style={{ width: "45px", background: "transparent", border: "1px solid var(--border)", color: "var(--text)", fontSize: 11, textAlign: "center", borderRadius: 4, padding: "2px" }}
@@ -1088,8 +1651,26 @@ function MyPatients() {
                   </td>
                   <td>
                     <div style={{ display: "flex", gap: 7 }}>
-                      <button className="btn-sm">Records</button>
-                      <button className="btn-sm">Prescribe</button>
+                      {/* Open the modal with full dataset info */}
+                      <button 
+                        className="btn-sm" 
+                        onClick={() => {
+                          if (onSelectPatient) onSelectPatient(p.patientId || p._id);
+                          if (onOpenModalWithData) onOpenModalWithData(p);
+                        }}
+                      >
+                        Records
+                      </button>
+
+                      <button 
+                        className="btn-sm"
+                        onClick={() => {
+                          if (onSelectPatient) onSelectPatient(p.patientId || p._id);
+                          if (onNavigate) onNavigate("prescribe");
+                        }}
+                      >
+                        Prescribe
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -1107,45 +1688,6 @@ function MyPatients() {
     </div>
   );
 }
-
-// export default MyPatients;
-
-// ─── Appointments ────────────────────────────────────────────────────────────
-// function Appointments() {
-//   const [filter, setFilter] = useState("all");
-//   const list = filter === "all" ? ALL_APPOINTMENTS : ALL_APPOINTMENTS.filter(a => a.status === filter);
-//   const statuses = ["all", "completed", "in-progress", "upcoming", "scheduled"];
-//   return (
-//     <div className="fade-in">
-//       <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
-//         {statuses.map(f => (
-//           <button key={f} onClick={() => setFilter(f)} style={{ padding: "7px 16px", border: "1px solid", borderRadius: "var(--r)", fontSize: 11, letterSpacing: ".08em", textTransform: "capitalize", borderColor: filter === f ? "var(--gold)" : "var(--bord)", background: filter === f ? "var(--gdim)" : "transparent", color: filter === f ? "var(--gold)" : "var(--text3)", transition: "all .2s" }}>
-//             {f === "all" ? `All (${ALL_APPOINTMENTS.length})` : f}
-//           </button>
-//         ))}
-//       </div>
-//       <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-//         {list.map((a, i) => {
-//           const initials = a.patient.split(" ").map(w => w[0]).join("").slice(0, 2);
-//           return (
-//             <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "15px 22px", borderBottom: i < list.length - 1 ? "1px solid var(--bord)" : "none" }}
-//               onMouseEnter={e => e.currentTarget.style.background = "rgba(201,168,76,.025)"}
-//               onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-//               <div className="sched-av serif" style={{ width: 36, height: 36, fontSize: 12 }}>{initials}</div>
-//               <div style={{ flex: 1 }}>
-//                 <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text)", marginBottom: 2 }}>{a.patient}</div>
-//                 <div style={{ fontSize: 11, color: "var(--text3)" }}>{a.type} · {a.date} at {a.time} · {a.id}</div>
-//               </div>
-//               <span className={`badge b-${a.status.replace(" ","-")}`}>{a.status}</span>
-//               <button className="btn-sm">Notes</button>
-//             </div>
-//           );
-//         })}
-//       </div>
-//     </div>
-//   );
-// }
-
 
 
 function Appointments() {
@@ -1283,91 +1825,284 @@ function Appointments() {
 }
 
 // ─── Write Prescription ──────────────────────────────────────────────────────
-function WritePrescription() {
-  const [patient, setPatient] = useState("");
-  const [appt,    setAppt]    = useState("");
-  const [diag,    setDiag]    = useState("");
-  const [therapy, setTherapy] = useState("");
-  const [followUp,setFollowUp]= useState("");
-  const [meds,    setMeds]    = useState([{ name: "", dose: "", freq: "", duration: "" }]);
-  const [saved,   setSaved]   = useState(false);
+// function WritePrescription() {
+//   const [patient, setPatient] = useState("");
+//   const [appt,    setAppt]    = useState("");
+//   const [diag,    setDiag]    = useState("");
+//   const [therapy, setTherapy] = useState("");
+//   const [followUp,setFollowUp]= useState("");
+//   const [meds,    setMeds]    = useState([{ name: "", dose: "", freq: "", duration: "" }]);
+//   const [saved,   setSaved]   = useState(false);
 
-  const addMed    = () => setMeds(m => [...m, { name: "", dose: "", freq: "", duration: "" }]);
-  const delMed    = i  => setMeds(m => m.filter((_, j) => j !== i));
+//   const addMed    = () => setMeds(m => [...m, { name: "", dose: "", freq: "", duration: "" }]);
+//   const delMed    = i  => setMeds(m => m.filter((_, j) => j !== i));
+//   const updateMed = (i, field, val) => setMeds(m => m.map((med, j) => j === i ? { ...med, [field]: val } : med));
+
+//   if (saved) return (
+//     <div className="fade-in" style={{ maxWidth: 480, margin: "0 auto", paddingTop: 40 }}>
+//       <div className="success-box">
+//         <div style={{ fontSize: 38, marginBottom: 14 }}>✦</div>
+//         <div className="serif" style={{ fontSize: 26, color: "var(--ok)", marginBottom: 8 }}>Prescription Saved</div>
+//         <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 22 }}>Prescription for <strong style={{ color: "var(--text)" }}>{patient}</strong> has been saved.</div>
+//         <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+//           <button className="btn-out" onClick={() => { setSaved(false); setPatient(""); setDiag(""); setMeds([{ name:"",dose:"",freq:"",duration:"" }]); }}>New Prescription</button>
+//           <button className="btn-sm" style={{ padding: "9px 18px" }}>↓ Download PDF</button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+
+//   return (
+//     <div className="fade-in" style={{ maxWidth: 760 }}>
+//       <div className="card" style={{ marginBottom: 16 }}>
+//         <div className="dvd" style={{ marginTop: 0 }}>Patient & Appointment</div>
+//         <div className="fg2">
+//           <div className="field"><label>Patient</label>
+//             <select value={patient} onChange={e => setPatient(e.target.value)}>
+//               <option value="">Select patient…</option>
+//               {PATIENTS.map(p => <option key={p.id} value={p.name}>{p.name} — {p.id}</option>)}
+//             </select>
+//           </div>
+//           <div className="field"><label>Linked Appointment</label>
+//             <select value={appt} onChange={e => setAppt(e.target.value)}>
+//               <option value="">Select appointment…</option>
+//               {TODAY_SCHEDULE.map(s => <option key={s.id} value={s.id}>{s.id} — {s.name} · {s.time}</option>)}
+//             </select>
+//           </div>
+//         </div>
+//         <div className="field"><label>Chief Complaint / Diagnosis</label>
+//           <textarea rows={2} placeholder="Primary clinical finding…" value={diag} onChange={e => setDiag(e.target.value)} style={{ resize: "vertical" }} />
+//         </div>
+//       </div>
+//       <div className="card" style={{ marginBottom: 16 }}>
+//         <div className="dvd" style={{ marginTop: 0 }}>Prescribed Medicines</div>
+//         {meds.map((med, i) => (
+//           <div className="fg4" key={i} style={{ alignItems: "flex-end", marginBottom: 10 }}>
+//             <div className="field">{i === 0 && <label>Medicine Name</label>}<input placeholder="e.g. Aspirin" value={med.name} onChange={e => updateMed(i,"name",e.target.value)} /></div>
+//             <div className="field">{i === 0 && <label>Dose</label>}<input placeholder="e.g. 75mg" value={med.dose} onChange={e => updateMed(i,"dose",e.target.value)} /></div>
+//             <div className="field">{i === 0 && <label>Frequency</label>}
+//               <select value={med.freq} onChange={e => updateMed(i,"freq",e.target.value)}>
+//                 <option value="">Frequency…</option>
+//                 <option>Once daily</option><option>Twice daily</option><option>Three times daily</option><option>Once at night</option><option>Every 8 hours</option><option>As needed</option>
+//               </select>
+//             </div>
+//             <div className="field">{i === 0 && <label>Duration</label>}<input placeholder="e.g. 4 weeks" value={med.duration} onChange={e => updateMed(i,"duration",e.target.value)} /></div>
+//             <button className="del-btn" onClick={() => delMed(i)} style={{ marginBottom: 1 }}>×</button>
+//           </div>
+//         ))}
+//         <button className="btn-out" style={{ fontSize: 11, marginTop: 4 }} onClick={addMed}>+ Add Medicine</button>
+//       </div>
+//       <div className="card" style={{ marginBottom: 20 }}>
+//         <div className="dvd" style={{ marginTop: 0 }}>Therapy & Follow-up</div>
+//         <div className="field" style={{ marginBottom: 14 }}>
+//           <label>Therapy Instructions</label>
+//           <textarea rows={3} placeholder="Exercise regimen, physiotherapy notes, dietary advice…" value={therapy} onChange={e => setTherapy(e.target.value)} style={{ resize: "vertical" }} />
+//         </div>
+//         <div className="fg2">
+//           <div className="field"><label>Follow-up Date</label><input type="date" value={followUp} onChange={e => setFollowUp(e.target.value)} /></div>
+//           <div className="field"><label>Session Notes (internal)</label><input placeholder="Internal note (not visible to patient)" /></div>
+//         </div>
+//       </div>
+//       <div style={{ display: "flex", gap: 12 }}>
+//         <button className="btn-gold" disabled={!patient || !diag} style={{ opacity: !patient || !diag ? 0.5 : 1 }} onClick={() => setSaved(true)}>Save Prescription ✦</button>
+//         <button className="btn-sm" style={{ padding: "10px 20px" }}>Save as Draft</button>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
+function WritePrescription() {
+  const [patientsList, setPatientsList] = useState([]);
+  const [appointmentsList, setAppointmentsList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Core Form Binding Hooks
+  const [selectedPatientId, setSelectedPatientId] = useState("");
+  const [appt, setAppt] = useState("");
+  const [diag, setDiag] = useState("");
+  const [therapy, setTherapy] = useState("");
+  const [followUp, setFollowUp] = useState("");
+  const [meds, setMeds] = useState([{ name: "", dose: "", freq: "", duration: "" }]);
+  const [internalNotes, setInternalNotes] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  const DOCTOR_NAME = "Mahade Hasan Faisal";
+  const API_BASE = "http://localhost:5000"; 
+
+  useEffect(() => {
+    const fetchCoreSystemData = async () => {
+      try {
+        const patientRes = await fetch(`${API_BASE}/users/patients`);
+        const patientData = await patientRes.json();
+        
+        // Match string exactly to isolate assigned files
+        const filtered = (patientData.patients || []).filter(
+          p => p.assignedDoctor === DOCTOR_NAME
+        );
+        setPatientsList(filtered);
+
+        const apptRes = await fetch(`${API_BASE}/api/appointments`);
+        const apptData = await apptRes.json();
+        setAppointmentsList(apptData.data || []);
+      } catch (err) {
+        console.error("Data tracking layer load exception:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCoreSystemData();
+  }, []);
+
+  const handlePatientSelectionChange = (e) => {
+    const pId = e.target.value;
+    setSelectedPatientId(pId);
+    setAppt("");
+    setDiag("");
+
+    if (!pId) return;
+
+    const matchedPatient = patientsList.find(p => p.patientId === pId || p._id === pId);
+    if (matchedPatient) {
+      // Pull condition directly from profile metadata 
+      setDiag(matchedPatient.condition || "");
+    }
+  };
+
+  // Only render slots mapped to selected file that have been explicitly confirmed
+ const activePatientAppointments = appointmentsList.filter(
+  a => a.patientId === selectedPatientId
+);
+
+  const addMed = () => setMeds(m => [...m, { name: "", dose: "", freq: "", duration: "" }]);
+  const delMed = i => setMeds(m => m.filter((_, j) => j !== i));
   const updateMed = (i, field, val) => setMeds(m => m.map((med, j) => j === i ? { ...med, [field]: val } : med));
 
-  if (saved) return (
-    <div className="fade-in" style={{ maxWidth: 480, margin: "0 auto", paddingTop: 40 }}>
-      <div className="success-box">
-        <div style={{ fontSize: 38, marginBottom: 14 }}>✦</div>
-        <div className="serif" style={{ fontSize: 26, color: "var(--ok)", marginBottom: 8 }}>Prescription Saved</div>
-        <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 22 }}>Prescription for <strong style={{ color: "var(--text)" }}>{patient}</strong> has been saved.</div>
-        <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-          <button className="btn-out" onClick={() => { setSaved(false); setPatient(""); setDiag(""); setMeds([{ name:"",dose:"",freq:"",duration:"" }]); }}>New Prescription</button>
-          <button className="btn-sm" style={{ padding: "9px 18px" }}>↓ Download PDF</button>
+  const handleSavePrescription = async () => {
+    const targetPatient = patientsList.find(p => p.patientId === selectedPatientId || p._id === selectedPatientId);
+    if (!targetPatient) return alert("Validation Error: Please select an active patient account.");
+
+    const payload = {
+      patientName: targetPatient.name,
+      patientEmail: targetPatient.email || "no-email@medicare.com",
+      patientId: targetPatient.patientId || targetPatient._id,
+      linkedAppointmentId: appt,
+      diagnosis: diag,
+      medications: meds,
+      therapyInstructions: therapy,
+      followUpDate: followUp,
+      internalNotes: internalNotes,
+      prescribedBy: DOCTOR_NAME
+    };
+
+    try {
+      const response = await fetch(`${API_BASE}/api/prescriptions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setSaved(true);
+      } else {
+        alert("Server returned submission failure structural error: " + result.message);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Network timeout tracking interface record pipe generation error.");
+    }
+  };
+
+  if (loading) return <div style={{ padding: 40, textAlign: "center", color: "var(--text3)" }}>Connecting to Clinical Database Node...</div>;
+
+  if (saved) {
+    const currentPatient = patientsList.find(p => p.patientId === selectedPatientId || p._id === selectedPatientId);
+    return (
+      <div className="fade-in" style={{ maxWidth: 480, margin: "0 auto", paddingTop: 40 }}>
+        <div className="success-box">
+          <div style={{ fontSize: 38, marginBottom: 14 }}>✦</div>
+          <div className="serif" style={{ fontSize: 26, color: "var(--ok)", marginBottom: 8 }}>Prescription Processed</div>
+          <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 22 }}>
+            Data for <strong style={{ color: "var(--text)" }}>{currentPatient?.name}</strong> ({currentPatient?.email}) has been permanently saved inside the cloud record store.
+          </div>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+            <button className="btn-out" onClick={() => { setSaved(false); setSelectedPatientId(""); setAppt(""); setDiag(""); setTherapy(""); setFollowUp(""); setInternalNotes(""); setMeds([{ name: "", dose: "", freq: "", duration: "" }]); }}>New Prescription</button>
+            <button className="btn-sm" style={{ padding: "9px 18px" }}>↓ Download PDF</button>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <div className="fade-in" style={{ maxWidth: 760 }}>
       <div className="card" style={{ marginBottom: 16 }}>
-        <div className="dvd" style={{ marginTop: 0 }}>Patient & Appointment</div>
+        <div className="dvd" style={{ marginTop: 0 }}>Patient & Timetable Alignment</div>
         <div className="fg2">
-          <div className="field"><label>Patient</label>
-            <select value={patient} onChange={e => setPatient(e.target.value)}>
-              <option value="">Select patient…</option>
-              {PATIENTS.map(p => <option key={p.id} value={p.name}>{p.name} — {p.id}</option>)}
+          <div className="field"><label>Patient (Filtered for Dr. Mahade Hasan Faisal)</label>
+            <select value={selectedPatientId} onChange={handlePatientSelectionChange}>
+              <option value="">Select case file…</option>
+              {patientsList.map(p => (
+                <option key={p._id} value={p.patientId || p._id}>{p.name} — ID: {p.patientId || "N/A"}</option>
+              ))}
             </select>
           </div>
-          <div className="field"><label>Linked Appointment</label>
-            <select value={appt} onChange={e => setAppt(e.target.value)}>
-              <option value="">Select appointment…</option>
-              {TODAY_SCHEDULE.map(s => <option key={s.id} value={s.id}>{s.id} — {s.name} · {s.time}</option>)}
+          <div className="field"><label>Linked Appointment Booking Time</label>
+            <select value={appt} onChange={e => setAppt(e.target.value)} disabled={!selectedPatientId}>
+              <option value="">Select slot timing…</option>
+              {activePatientAppointments.map(s => (
+                <option key={s.appointmentId} value={s.appointmentId}>{s.date} · {s.timeSlot} ({s.type})</option>
+              ))}
             </select>
           </div>
         </div>
-        <div className="field"><label>Chief Complaint / Diagnosis</label>
+        <div className="field"><label>Chief Complaint / Diagnosis (Synced Medical Condition)</label>
           <textarea rows={2} placeholder="Primary clinical finding…" value={diag} onChange={e => setDiag(e.target.value)} style={{ resize: "vertical" }} />
         </div>
       </div>
+
       <div className="card" style={{ marginBottom: 16 }}>
         <div className="dvd" style={{ marginTop: 0 }}>Prescribed Medicines</div>
         {meds.map((med, i) => (
           <div className="fg4" key={i} style={{ alignItems: "flex-end", marginBottom: 10 }}>
-            <div className="field">{i === 0 && <label>Medicine Name</label>}<input placeholder="e.g. Aspirin" value={med.name} onChange={e => updateMed(i,"name",e.target.value)} /></div>
-            <div className="field">{i === 0 && <label>Dose</label>}<input placeholder="e.g. 75mg" value={med.dose} onChange={e => updateMed(i,"dose",e.target.value)} /></div>
+            <div className="field">{i === 0 && <label>Medicine Name</label>}<input placeholder="e.g. Aspirin" value={med.name} onChange={e => updateMed(i, "name", e.target.value)} /></div>
+            <div className="field">{i === 0 && <label>Dose</label>}<input placeholder="e.g. 75mg" value={med.dose} onChange={e => updateMed(i, "dose", e.target.value)} /></div>
             <div className="field">{i === 0 && <label>Frequency</label>}
-              <select value={med.freq} onChange={e => updateMed(i,"freq",e.target.value)}>
+              <select value={med.freq} onChange={e => updateMed(i, "freq", e.target.value)}>
                 <option value="">Frequency…</option>
                 <option>Once daily</option><option>Twice daily</option><option>Three times daily</option><option>Once at night</option><option>Every 8 hours</option><option>As needed</option>
               </select>
             </div>
-            <div className="field">{i === 0 && <label>Duration</label>}<input placeholder="e.g. 4 weeks" value={med.duration} onChange={e => updateMed(i,"duration",e.target.value)} /></div>
+            <div className="field">{i === 0 && <label>Duration</label>}<input placeholder="e.g. 4 weeks" value={med.duration} onChange={e => updateMed(i, "duration", e.target.value)} /></div>
             <button className="del-btn" onClick={() => delMed(i)} style={{ marginBottom: 1 }}>×</button>
           </div>
         ))}
         <button className="btn-out" style={{ fontSize: 11, marginTop: 4 }} onClick={addMed}>+ Add Medicine</button>
       </div>
+
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="dvd" style={{ marginTop: 0 }}>Therapy & Follow-up</div>
         <div className="field" style={{ marginBottom: 14 }}>
           <label>Therapy Instructions</label>
-          <textarea rows={3} placeholder="Exercise regimen, physiotherapy notes, dietary advice…" value={therapy} onChange={e => setTherapy(e.target.value)} style={{ resize: "vertical" }} />
+          <textarea rows={3} placeholder="Dietary restrictions or rehabilitation instructions..." value={therapy} onChange={e => setTherapy(e.target.value)} style={{ resize: "vertical" }} />
         </div>
         <div className="fg2">
           <div className="field"><label>Follow-up Date</label><input type="date" value={followUp} onChange={e => setFollowUp(e.target.value)} /></div>
-          <div className="field"><label>Session Notes (internal)</label><input placeholder="Internal note (not visible to patient)" /></div>
+          <div className="field"><label>Session Notes (internal)</label><input placeholder="Internal charting notation references..." value={internalNotes} onChange={e => setInternalNotes(e.target.value)} /></div>
         </div>
       </div>
+
       <div style={{ display: "flex", gap: 12 }}>
-        <button className="btn-gold" disabled={!patient || !diag} style={{ opacity: !patient || !diag ? 0.5 : 1 }} onClick={() => setSaved(true)}>Save Prescription ✦</button>
+        <button className="btn-gold" disabled={!selectedPatientId || !diag} style={{ opacity: !selectedPatientId || !diag ? 0.5 : 1 }} onClick={handleSavePrescription}>Save Prescription ✦</button>
         <button className="btn-sm" style={{ padding: "10px 20px" }}>Save as Draft</button>
       </div>
     </div>
   );
 }
+
+
 
 // ─── Profile ─────────────────────────────────────────────────────────────────
 function Profile() {
@@ -1428,8 +2163,124 @@ function Profile() {
 }
 
 // ─── Root ────────────────────────────────────────────────────────────────────
+// export default function DoctorDashboard({ onLogout }) {
+//   const [page, setPage] = useState("dashboard");
+//   // ─── Added State: Keeps track of which patient is actively selected across components ───
+//   const [selectedPatientId, setSelectedPatientId] = useState("");
+//   const [isModalOpen, setIsModalOpen] = useState(false);
+
+//   const [t0, t1] = PAGE_TITLES[page] || ["Doctor", "Dashboard"];
+//   const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+
+//   return (
+//     <div className="shell">
+//       <style>{STYLES}</style>
+
+//       {/* ── L-shaped Medicine Panel ── */}
+//       <LMedicinePanel />
+
+//       {/* Sidebar (positioned after L-left strip) */}
+//       <aside className="sidebar">
+//         <div className="sb-logo">
+//           <div className="sb-logo-txt serif"><span style={{ color: "var(--gold)" }}>UP</span>PC</div>
+//           <div className="sb-logo-sub">Doctor Portal</div>
+//         </div>
+//         <div className="sb-doc">
+//           <div className="sb-av serif">{DOCTOR.avatar}</div>
+//           <div>
+//             <div className="sb-name">{DOCTOR.name}</div>
+//             <div className="sb-spec">{DOCTOR.spec}</div>
+//           </div>
+//         </div>
+//         <nav className="sb-nav">
+//           {NAV.map(item => (
+//             <div key={item.id} className={`nav-item ${page === item.id ? "active" : ""}`} onClick={() => setPage(item.id)}>
+//               <span className="nav-icon">{item.icon}</span>
+//               {item.label}
+//             </div>
+//           ))}
+//         </nav>
+//         <div className="sb-foot">
+//           <div className="sb-status"><div className="online-dot" /><span>On Duty · Ward B</span></div>
+//           {onLogout && (
+//             <button className="logout" onClick={onLogout}>⇤ Sign Out</button>
+//           )}
+//         </div>
+//       </aside>
+
+//       {/* Main content */}
+//       <main className="main">
+//         <div className="topbar">
+//           <h1 className="pg-title serif">{t0} <span>{t1}</span></h1>
+//           <div className="tb-right">
+//             <span className="date-chip">{today}</span>
+//             <div style={{ position: "relative" }}>
+//               <button className="icon-btn">🔔</button>
+//               <div className="ndot" />
+//             </div>
+//             <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--gdim)", border: "1px solid var(--gbord)", display: "flex", alignItems: "center", justifycontent: "center", fontFamily: "'Cormorant Garamond',serif", fontSize: 13, color: "var(--gold)" }}>
+//               {DOCTOR.avatar}
+//             </div>
+//           </div>
+//         </div>
+        
+//         <div className="content">
+//           {/* ─── Page View Dispatcher with Handlers Attached ─── */}
+//           {page === "dashboard"    && <Dashboard setPage={setPage} />}
+//           {page === "schedule"     && <TodaySchedule setPage={setPage} />}
+          
+//           {page === "patients"     && (
+//             <MyPatients
+//               setPage={setPage}
+//               onViewRecords={(id) => {
+//                 setSelectedPatientId(id);
+//                 setIsModalOpen(true);
+//               }}
+//               onSelectPatientForPrescription={(id) => {
+//                 setSelectedPatientId(id);
+//                 setPage("prescribe");
+//               }}
+//             />
+//           )}
+          
+//           {page === "appointments" && <Appointments />}
+          
+//           {page === "prescribe"    && (
+//             <WritePrescription
+//               preSelectedId={selectedPatientId}
+//               clearSelectedId={() => setSelectedPatientId("")}
+//             />
+//           )}
+          
+//           {page === "profile"      && <Profile />}
+//         </div>
+//       </main>
+
+//       {/* ─── Global Overlap Modal Component Box ─── */}
+//       {isModalOpen && (
+//         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+//           <div className="modal-window" onClick={(e) => e.stopPropagation()}>
+//             <PatientRecordsView
+//               patientId={selectedPatientId}
+//               onBack={() => setIsModalOpen(false)}
+//             />
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+
+
 export default function DoctorDashboard({ onLogout }) {
   const [page, setPage] = useState("dashboard");
+  const [selectedPatientId, setSelectedPatientId] = useState("");
+  
+  // Modal controllers
+  const [activeModalPatient, setActiveModalPatient] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [t0, t1] = PAGE_TITLES[page] || ["Doctor", "Dashboard"];
   const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 
@@ -1440,7 +2291,7 @@ export default function DoctorDashboard({ onLogout }) {
       {/* ── L-shaped Medicine Panel ── */}
       <LMedicinePanel />
 
-      {/* Sidebar (positioned after L-left strip) */}
+      {/* Sidebar */}
       <aside className="sidebar">
         <div className="sb-logo">
           <div className="sb-logo-txt serif"><span style={{ color: "var(--gold)" }}>UP</span>PC</div>
@@ -1484,15 +2335,46 @@ export default function DoctorDashboard({ onLogout }) {
             </div>
           </div>
         </div>
+        
         <div className="content">
-          {page === "dashboard"    && <Dashboard    setPage={setPage} />}
+          {page === "dashboard"    && <Dashboard setPage={setPage} />}
           {page === "schedule"     && <TodaySchedule setPage={setPage} />}
-          {page === "patients"     && <MyPatients />}
+          
+          {page === "patients"     && (
+            <MyPatients 
+              onNavigate={(targetPage) => setPage(targetPage)}
+              onSelectPatient={(id) => setSelectedPatientId(id)}
+              onOpenModalWithData={(patientObj) => {
+                setActiveModalPatient(patientObj);
+                setIsModalOpen(true);
+              }}
+            />
+          )}
+          
           {page === "appointments" && <Appointments />}
-          {page === "prescribe"    && <WritePrescription />}
+          
+          {page === "prescribe"    && (
+            <WritePrescription 
+              preSelectedId={selectedPatientId} 
+              clearSelectedId={() => setSelectedPatientId("")}
+            />
+          )}
+          
           {page === "profile"      && <Profile />}
         </div>
       </main>
+
+      {/* ─── Global Overlap Modal Component Box ─── */}
+      {isModalOpen && activeModalPatient && (
+        <div className="modal-overlay" onClick={() => { setIsModalOpen(false); setActiveModalPatient(null); }}>
+          <div className="modal-window" onClick={(e) => e.stopPropagation()}>
+            <PatientRecordsModalView 
+              patient={activeModalPatient} 
+              onClose={() => { setIsModalOpen(false); setActiveModalPatient(null); }} 
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1320,122 +1320,390 @@ function BookAppointment() {
   );
 }
 
-function Prescriptions() {
-  const [expanded, setExpanded] = useState(0);
-  return (
-    <div className="fade-in">
-      <div style={{ marginBottom: 20, padding: "12px 18px", background: "rgba(201,168,76,0.04)", border: "1px solid var(--gold-border)", borderRadius: "var(--radius)", fontSize: 12, color: "var(--text3)" }} className="sans">
-        ⚕️ Prescriptions are issued by your treating doctor and linked to your appointment. Only your assigned doctor or an administrator may edit them.
-      </div>
-      {PRESCRIPTIONS.map((rx, i) => (
-        <div className="rx-card" key={rx.id}>
-          <div className="rx-header">
-            <div>
-              <div className="rx-id sans">{rx.id}</div>
-              <div className="rx-diagnosis serif">{rx.diagnosis}</div>
-              <div className="rx-doctor sans">{rx.doctor} · {rx.date}</div>
-            </div>
-            <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
-              <button className="download-btn sans" onClick={() => setExpanded(expanded === i ? -1 : i)}>
-                {expanded === i ? "Collapse" : "View Details"}
-              </button>
-              <button className="download-btn sans">↓ PDF</button>
-            </div>
-          </div>
-
-          {expanded === i && (
-            <div className="fade-in">
-              <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text3)", marginBottom: 10 }} className="sans">Prescribed Medicines</div>
-              <div className="rx-meds">
-                {rx.medicines.map((m, j) => (
-                  <div className="med-item" key={j}>
-                    <div className="med-name sans">{m.name}</div>
-                    <div className="med-detail sans">
-                      Dose: {m.dose}<br />
-                      {m.freq} · {m.duration}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text3)", margin: "16px 0 8px" }} className="sans">Therapy Instructions</div>
-              <div className="rx-therapy sans">{rx.therapy}</div>
-              <div className="rx-footer">
-                <div className="rx-followup sans">Follow-up date: <span>{rx.followUp}</span></div>
-                <button className="btn-outline sans" style={{ fontSize: 11 }}>Book Follow-up</button>
-              </div>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// function Bills() {
+// function Prescriptions() {
+//   const [expanded, setExpanded] = useState(0);
 //   return (
 //     <div className="fade-in">
-//       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 24 }}>
-//         {[
-//           { label: "Total Billed", value: "৳10,500", sub: "2025 to date", color: "var(--text)" },
-//           { label: "Total Paid", value: "৳9,200", sub: "Across all bills", color: "var(--success)" },
-//           { label: "Outstanding", value: "৳1,300", sub: "Balance due", color: "var(--warning)" },
-//         ].map((s) => (
-//           <div className="card-sm" key={s.label} style={{ textAlign: "center" }}>
-//             <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text3)", marginBottom: 10 }} className="sans">{s.label}</div>
-//             <div className="serif" style={{ fontSize: 36, fontWeight: 300, color: s.color, marginBottom: 4 }}>{s.value}</div>
-//             <div style={{ fontSize: 12, color: "var(--text3)" }} className="sans">{s.sub}</div>
+//       <div style={{ marginBottom: 20, padding: "12px 18px", background: "rgba(201,168,76,0.04)", border: "1px solid var(--gold-border)", borderRadius: "var(--radius)", fontSize: 12, color: "var(--text3)" }} className="sans">
+//         ⚕️ Prescriptions are issued by your treating doctor and linked to your appointment. Only your assigned doctor or an administrator may edit them.
+//       </div>
+//       {PRESCRIPTIONS.map((rx, i) => (
+//         <div className="rx-card" key={rx.id}>
+//           <div className="rx-header">
+//             <div>
+//               <div className="rx-id sans">{rx.id}</div>
+//               <div className="rx-diagnosis serif">{rx.diagnosis}</div>
+//               <div className="rx-doctor sans">{rx.doctor} · {rx.date}</div>
+//             </div>
+//             <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
+//               <button className="download-btn sans" onClick={() => setExpanded(expanded === i ? -1 : i)}>
+//                 {expanded === i ? "Collapse" : "View Details"}
+//               </button>
+//               <button className="download-btn sans">↓ PDF</button>
+//             </div>
 //           </div>
-//         ))}
-//       </div>
 
-//       <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-//         <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)" }}>
-//           <div className="section-hd-title serif">Bills & <span>Receipts</span></div>
-//         </div>
-//         <table className="bill-table" style={{ width: "100%" }}>
-//           <thead>
-//             <tr>
-//               <th className="sans">Bill</th>
-//               <th className="sans">Date</th>
-//               <th className="sans">Amount</th>
-//               <th className="sans">Status</th>
-//               <th className="sans">Action</th>
-//             </tr>
-//           </thead>
-//           <tbody>
-//             {BILLS.map((b) => (
-//               <tr key={b.id}>
-//                 <td>
-//                   <div className="bill-id sans">{b.id}</div>
-//                   <div className="bill-services sans">{b.services.join(" · ")}</div>
-//                 </td>
-//                 <td className="sans">{b.date}</td>
-//                 <td>
-//                   <div className="bill-amount serif">৳{b.total.toLocaleString()}</div>
-//                   {b.status === "partial" && (
-//                     <div className="bill-paid sans">Paid: ৳{b.paid.toLocaleString()} · Due: ৳{(b.total - b.paid).toLocaleString()}</div>
-//                   )}
-//                 </td>
-//                 <td><span className={`badge badge-${b.status}`}>{b.status}</span></td>
-//                 <td>
-//                   <div style={{ display: "flex", gap: 8 }}>
-//                     <button className="download-btn sans">↓ Receipt</button>
-//                     {b.status === "partial" && <button className="btn-gold sans" style={{ fontSize: 11, padding: "7px 14px" }}>Pay Now</button>}
+//           {expanded === i && (
+//             <div className="fade-in">
+//               <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text3)", marginBottom: 10 }} className="sans">Prescribed Medicines</div>
+//               <div className="rx-meds">
+//                 {rx.medicines.map((m, j) => (
+//                   <div className="med-item" key={j}>
+//                     <div className="med-name sans">{m.name}</div>
+//                     <div className="med-detail sans">
+//                       Dose: {m.dose}<br />
+//                       {m.freq} · {m.duration}
+//                     </div>
 //                   </div>
-//                 </td>
-//               </tr>
-//             ))}
-//           </tbody>
-//         </table>
-//       </div>
-
-//       <div style={{ marginTop: 20, padding: "14px 18px", background: "var(--navy2)", border: "1px solid var(--border)", borderRadius: "var(--radius)", fontSize: 12, color: "var(--text3)", display: "flex", alignItems: "center", justifyContent: "space-between" }} className="sans">
-//         <span>💳 Pay outstanding balance securely via bKash, Nagad, or card</span>
-//         <button className="btn-gold sans" style={{ fontSize: 11, padding: "9px 20px" }}>Pay ৳1,300 Now</button>
-//       </div>
+//                 ))}
+//               </div>
+//               <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text3)", margin: "16px 0 8px" }} className="sans">Therapy Instructions</div>
+//               <div className="rx-therapy sans">{rx.therapy}</div>
+//               <div className="rx-footer">
+//                 <div className="rx-followup sans">Follow-up date: <span>{rx.followUp}</span></div>
+//                 <button className="btn-outline sans" style={{ fontSize: 11 }}>Book Follow-up</button>
+//               </div>
+//             </div>
+//           )}
+//         </div>
+//       ))}
 //     </div>
 //   );
 // }
+
+
+
+// function Prescriptions() {
+//   // ─── 1. Core States for Data Management ───
+//   const [prescriptionsList, setPrescriptionsList] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [expanded, setExpanded] = useState(0); // Keeps first item expanded by default as requested
+
+//   const API_BASE = "http://localhost:5000";
+
+//   // ─── 2. Fetch Personal Treatment Data Log ───
+//   useEffect(() => {
+//     const fetchPatientPrescriptions = async () => {
+//       try {
+//         /*
+//           NOTE: Replace 'CURRENT_PATIENT_ID' with your authenticated user context indicator tracking ID 
+//           e.g., localStorage.getItem("patientId") or your global Auth context hook state reference values.
+//         */
+//         const patientId = localStorage.getItem("patientId") || "CURRENT_PATIENT_ID";
+        
+//         const response = await fetch(`${API_BASE}/api/prescriptions?patientId=${patientId}`);
+//         if (response.ok) {
+//           const result = await response.json();
+          
+//           // Normalize responses (safely fallback whether your router returns a plain array or data object wrapper)
+//           let rawData = Array.isArray(result) 
+//             ? result 
+//             : result.data || result.prescriptions || [];
+          
+//           // Sort items dynamically so that newest prescriptions are displayed at the top
+//           rawData.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+//           setPrescriptionsList(rawData);
+//         } else {
+//           console.error("Failed to fetch prescriptions dataset from backend database api router.");
+//         }
+//       } catch (error) {
+//         console.error("Error communicating with prescription logs server framework:", error);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchPatientPrescriptions();
+//   }, []);
+
+//   if (loading) {
+//     return (
+//       <div className="card" style={{ padding: "40px 0", textAlign: "center" }}>
+//         <div style={{ color: "var(--text3)", fontSize: 13 }}>Retrieving your official clinical prescription history logs...</div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="fade-in">
+//       {/* Informative Security Callout Badge */}
+//       <div style={{ marginBottom: 20, padding: "12px 18px", background: "rgba(201,168,76,0.04)", border: "1px solid var(--gold-border)", borderRadius: "var(--radius)", fontSize: 12, color: "var(--text3)" }} className="sans">
+//         ⚕️ Prescriptions are issued by your treating doctor and linked to your appointment. Only your assigned doctor or an administrator may edit them.
+//       </div>
+
+//       {prescriptionsList.length === 0 ? (
+//         <div className="card" style={{ padding: "48px 20px", textAlign: "center", color: "var(--text3)", fontSize: 14 }}>
+//           📁 No historical pharmaceutical prescriptions have been indexed to your profile account history.
+//         </div>
+//       ) : (
+//         prescriptionsList.map((rx, i) => {
+//           // Fallback parsing variables mapping backend variations safely to your layout variables
+//           const recordId = rx.prescriptionId || rx._id || `RX-${1000 + i}`;
+//           const diagnosisStr = rx.diagnosis || "General Medical Checkup Consultation";
+//           const providerName = rx.doctorName || rx.assignedDoctor || "Attending Clinical Physician";
+          
+//           const issueDate = rx.createdAt 
+//             ? new Date(rx.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) 
+//             : (rx.date || "---");
+
+//           const therapyInstructions = rx.therapyInstructions || rx.therapy || rx.instructions || "Take all medical dosages precisely as designated.";
+//           const followUpDateStr = rx.followUpDate || rx.followUp || "Not Scheduled";
+
+//           // Normalize parsing the medicines data array shape whether strings or objects exist in database collections
+//           const activeMedicines = Array.isArray(rx.medicines) ? rx.medicines : (rx.medications || []);
+
+//           return (
+//             <div className="rx-card" key={rx._id || recordId} style={{ marginBottom: 16 }}>
+//               {/* Card Header Section Layout */}
+//               <div className="rx-header">
+//                 <div>
+//                   <div className="rx-id sans" style={{ color: "var(--text3)", fontSize: 11 }}>{recordId}</div>
+//                   <div className="rx-diagnosis serif" style={{ fontSize: 18, color: "var(--gold)", margin: "2px 0 4px" }}>{diagnosisStr}</div>
+//                   <div className="rx-doctor sans" style={{ fontSize: 12, color: "var(--text2)" }}>{providerName} · <span style={{ color: "var(--text3)" }}>{issueDate}</span></div>
+//                 </div>
+//                 <div style={{ display: "flex", gap: 10, flexShrink: 0, alignItems: "center" }}>
+//                   <button className="download-btn sans" onClick={() => setExpanded(expanded === i ? -1 : i)}>
+//                     {expanded === i ? "Collapse" : "View Details"}
+//                   </button>
+//                   <button className="download-btn sans">↓ PDF</button>
+//                 </div>
+//               </div>
+
+//               {/* Collapsible Expansion Section Layout Container */}
+//               {expanded === i && (
+//                 <div className="fade-in" style={{ borderTop: "1px solid var(--bord)", marginTop: 14, paddingTop: 14 }}>
+//                   <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text3)", marginBottom: 10 }} className="sans">Prescribed Medicines</div>
+                  
+//                   {activeMedicines.length === 0 ? (
+//                     <div style={{ fontSize: 12, color: "var(--text3)", fontStyle: "italic", marginBottom: 14 }}>No explicit items listed. Refer to custom therapy instructions below.</div>
+//                   ) : (
+//                     <div className="rx-meds" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10 }}>
+//                       {activeMedicines.map((m, j) => {
+//                         const isStringFormat = typeof m === "string";
+//                         return (
+//                           <div className="med-item" key={j} style={{ background: "rgba(0,0,0,0.15)", padding: "10px 14px", borderRadius: 4, border: "1px solid var(--bord)" }}>
+//                             <div className="med-name sans" style={{ fontWeight: 500, color: "var(--text)", fontSize: 13 }}>
+//                               {isStringFormat ? m : (m.name || m.medicineName || "Prescription item")}
+//                             </div>
+//                             {!isStringFormat && (
+//                               <div className="med-detail sans" style={{ fontSize: 11, color: "var(--text3)", marginTop: 4, lineHeight: 1.4 }}>
+//                                 <span>Dose: {m.dose || m.dosage || "As Directed"}</span><br />
+//                                 <span>{m.freq || m.frequency || "1-0-1"} · {m.duration || "Days Course"}</span>
+//                               </div>
+//                             )}
+//                           </div>
+//                         );
+//                       })}
+//                     </div>
+//                   )}
+
+//                   {/* Therapy Instructions Details Block */}
+//                   <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text3)", margin: "16px 0 8px" }} className="sans">Therapy Instructions</div>
+//                   <div className="rx-therapy sans" style={{ fontSize: 13, background: "rgba(0,0,0,0.1)", padding: 12, borderRadius: 4, borderLeft: "2px solid var(--gold)", color: "var(--text2)", fontStyle: "italic", lineHeight: 1.5 }}>
+//                     {therapyInstructions}
+//                   </div>
+
+//                   {/* Card Footer Action Block */}
+//                   <div className="rx-footer" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16, borderTop: "1px dashed var(--bord)", paddingTop: 12 }}>
+//                     <div className="rx-followup sans" style={{ fontSize: 12, color: "var(--text3)" }}>
+//                       Follow-up date: <span style={{ color: "var(--info)", fontWeight: 500 }}>{followUpDateStr}</span>
+//                     </div>
+//                     <button className="btn-outline sans" style={{ fontSize: 11, padding: "6px 12px", background: "transparent", border: "1px solid var(--bord)", color: "var(--text)" }}>
+//                       Book Follow-up
+//                     </button>
+//                   </div>
+//                 </div>
+//               )}
+//             </div>
+//           );
+//         })
+//       )}
+//     </div>
+//   );
+// }
+
+function Prescriptions() {
+  const [prescriptionsList, setPrescriptionsList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(0);
+  const [debugError, setDebugError] = useState("");
+
+  const API_BASE = "http://localhost:5000";
+
+  useEffect(() => {
+    const fetchPatientPrescriptions = async () => {
+      try {
+        // 🔍 DEBUG STEP 1: Look for any available logged-in patient session identifiers
+        const patientId = 
+          localStorage.getItem("patientId") || 
+          localStorage.getItem("userId") || 
+          sessionStorage.getItem("patientId") ||
+          ""; // Fallback to empty string if none found to check total collections
+
+        console.log("📌 [Frontend Debug] Attempting to fetch prescriptions for Patient ID:", patientId);
+
+        // Build route URL safely
+        const targetUrl = patientId 
+          ? `${API_BASE}/api/prescriptions?patientId=${patientId}`
+          : `${API_BASE}/api/prescriptions`;
+
+        const response = await fetch(targetUrl);
+        
+        console.log("📌 [Frontend Debug] Server response status code:", response.status);
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log("📌 [Frontend Debug] Raw data payload received from backend:", result);
+          
+          // 🔍 DEBUG STEP 2: Normalize array extraction depending on your server controller configuration
+          let extractedArray = [];
+          if (Array.isArray(result)) {
+            extractedArray = result;
+          } else if (result.data && Array.isArray(result.data)) {
+            extractedArray = result.data;
+          } else if (result.prescriptions && Array.isArray(result.prescriptions)) {
+            extractedArray = result.prescriptions;
+          } else if (result.success && Array.isArray(result.data)) {
+            extractedArray = result.data;
+          }
+
+          console.log("📌 [Frontend Debug] Successfully processed active records array count:", extractedArray.length);
+
+          // Sort records to display the newest first
+          extractedArray.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+          setPrescriptionsList(extractedArray);
+        } else {
+          const errText = await response.text();
+          setDebugError(`Server responded with code ${response.status}: ${errText}`);
+          console.error("Failed to fetch prescriptions from backend.");
+        }
+      } catch (error) {
+        setDebugError(`Network error communicating with server: ${error.message}`);
+        console.error("Error communicating with prescription logs framework:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPatientPrescriptions();
+  }, []);
+
+  // ─── Render Handling States ───
+  if (loading) {
+    return (
+      <div className="card" style={{ padding: "40px 0", textAlign: "center" }}>
+        <div style={{ color: "var(--text3)", fontSize: 13 }}>Retrieving your official clinical prescription records...</div>
+      </div>
+    );
+  }
+
+  if (debugError) {
+    return (
+      <div className="card" style={{ padding: "24px", border: "1px solid rgba(232,85,85,.2)", background: "rgba(232,85,85,.05)", color: "var(--danger)" }}>
+        <h4 style={{ margin: "0 0 8px 0" }}>⚠️ Database Connection Alert</h4>
+        <p style={{ margin: 0, fontSize: 12, opacity: 0.8 }}>{debugError}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fade-in">
+      {/* Informative Security Callout Badge */}
+      <div style={{ marginBottom: 20, padding: "12px 18px", background: "rgba(201,168,76,0.04)", border: "1px solid var(--gold-border)", borderRadius: "var(--radius)", fontSize: 12, color: "var(--text3)" }} className="sans">
+        ⚕️ Prescriptions are issued by your treating doctor and linked to your appointment. Only your assigned doctor or an administrator may edit them.
+      </div>
+
+      {prescriptionsList.length === 0 ? (
+        <div className="card" style={{ padding: "48px 20px", textAlign: "center", color: "var(--text3)", fontSize: 14 }}>
+          📁 No historical pharmaceutical prescriptions have been indexed to your profile account history.
+          <div style={{ fontSize: 11, color: "var(--text4)", marginTop: 8 }}>
+            Check your browser console (F12 Key) to verify network stream details.
+          </div>
+        </div>
+      ) : (
+        prescriptionsList.map((rx, i) => {
+          const recordId = rx.prescriptionId || rx._id || `RX-${1000 + i}`;
+          const diagnosisStr = rx.diagnosis || "General Consultation Case Study";
+          const providerName = rx.doctorName || rx.assignedDoctor || "Attending Clinical Physician";
+          
+          const issueDate = rx.createdAt 
+            ? new Date(rx.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) 
+            : (rx.date || "---");
+
+          const therapyInstructions = rx.therapyInstructions || rx.therapy || rx.instructions || "Take all medical dosages precisely as designated.";
+          const followUpDateStr = rx.followUpDate || rx.followUp || "Not Scheduled";
+          const activeMedicines = Array.isArray(rx.medicines) ? rx.medicines : (rx.medications || []);
+
+          return (
+            <div className="rx-card" key={rx._id || recordId} style={{ marginBottom: 16 }}>
+              {/* Card Header Section Layout */}
+              <div className="rx-header">
+                <div>
+                  <div className="rx-id sans" style={{ color: "var(--text3)", fontSize: 11 }}>{recordId}</div>
+                  <div className="rx-diagnosis serif" style={{ fontSize: 18, color: "var(--gold)", margin: "2px 0 4px" }}>{diagnosisStr}</div>
+                  <div className="rx-doctor sans" style={{ fontSize: 12, color: "var(--text2)" }}>{providerName} · <span style={{ color: "var(--text3)" }}>{issueDate}</span></div>
+                </div>
+                <div style={{ display: "flex", gap: 10, flexShrink: 0, alignItems: "center" }}>
+                  <button className="download-btn sans" onClick={() => setExpanded(expanded === i ? -1 : i)}>
+                    {expanded === i ? "Collapse" : "View Details"}
+                  </button>
+                  <button className="download-btn sans">↓ PDF</button>
+                </div>
+              </div>
+
+              {/* Collapsible Expansion Section Layout Container */}
+              {expanded === i && (
+                <div className="fade-in" style={{ borderTop: "1px solid var(--bord)", marginTop: 14, paddingTop: 14 }}>
+                  <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text3)", marginBottom: 10 }} className="sans">Prescribed Medicines</div>
+                  
+                  {activeMedicines.length === 0 ? (
+                    <div style={{ fontSize: 12, color: "var(--text3)", fontStyle: "italic", marginBottom: 14 }}>No explicit items listed. Refer to custom therapy instructions below.</div>
+                  ) : (
+                    <div className="rx-meds" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10 }}>
+                      {activeMedicines.map((m, j) => {
+                        const isStringFormat = typeof m === "string";
+                        return (
+                          <div className="med-item" key={j} style={{ background: "rgba(0,0,0,0.15)", padding: "10px 14px", borderRadius: 4, border: "1px solid var(--bord)" }}>
+                            <div className="med-name sans" style={{ fontWeight: 500, color: "var(--text)", fontSize: 13 }}>
+                              {isStringFormat ? m : (m.name || m.medicineName || m.medicine || "Prescription item")}
+                            </div>
+                            {!isStringFormat && (
+                              <div className="med-detail sans" style={{ fontSize: 11, color: "var(--text3)", marginTop: 4, lineHeight: 1.4 }}>
+                                <span>Dose: {m.dose || m.dosage || "As Directed"}</span><br />
+                                <span>{m.freq || m.frequency || "1-0-1"} · {m.duration || "Days Course"}</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Therapy Instructions Details Block */}
+                  <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text3)", margin: "16px 0 8px" }} className="sans">Therapy Instructions</div>
+                  <div className="rx-therapy sans" style={{ fontSize: 13, background: "rgba(0,0,0,0.1)", padding: 12, borderRadius: 4, borderLeft: "2px solid var(--gold)", color: "var(--text2)", fontStyle: "italic", lineHeight: 1.5 }}>
+                    {therapyInstructions}
+                  </div>
+
+                  {/* Card Footer Action Block */}
+                  <div className="rx-footer" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16, borderTop: "1px dashed var(--bord)", paddingTop: 12 }}>
+                    <div className="rx-followup sans" style={{ fontSize: 12, color: "var(--text3)" }}>
+                      Follow-up date: <span style={{ color: "var(--info)", fontWeight: 500 }}>{followUpDateStr}</span>
+                    </div>
+                    <button className="btn-outline sans" style={{ fontSize: 11, padding: "6px 12px", background: "transparent", border: "1px solid var(--bord)", color: "var(--text)" }}>
+                      Book Follow-up
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+}
 
 
 function Bills() {
